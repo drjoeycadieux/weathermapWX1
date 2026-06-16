@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>WeatherFront Demo</title>
+
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.5.0/mapbox-gl.css" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;
+    background:#0f172a;
+}
+
+#map{
+    position:absolute;
+    inset:0;
+}
+
+.header{
+    position:absolute;
+    top:12px;
+    left:12px;
+    right:12px;
+    height:60px;
+
+    z-index:1000;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:0 20px;
+
+    background:rgba(8,12,20,.92);
+    backdrop-filter:blur(12px);
+
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:14px;
+
+    color:white;
+}
+
+.logo{
+    font-size:22px;
+    font-weight:700;
+}
+
+.subtitle{
+    font-size:12px;
+    color:#7dd3fc;
+}
+
+.sidebar{
+    position:absolute;
+    top:90px;
+    left:12px;
+
+    width:300px;
+
+    z-index:1000;
+
+    background:rgba(8,12,20,.92);
+    backdrop-filter:blur(12px);
+
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:14px;
+
+    padding:18px;
+
+    color:white;
+}
+
+.section{
+    margin-bottom:20px;
+}
+
+.section-title{
+    font-size:14px;
+    margin-bottom:12px;
+    color:#38bdf8;
+    font-weight:600;
+}
+
+button{
+    width:100%;
+    padding:10px;
+    margin-bottom:8px;
+
+    border:none;
+    border-radius:8px;
+
+    background:#1e293b;
+    color:white;
+
+    cursor:pointer;
+    transition:.2s;
+}
+
+button:hover{
+    background:#334155;
+}
+
+input[type=range]{
+    width:100%;
+}
+
+.status{
+    position:absolute;
+    bottom:15px;
+    right:15px;
+
+    z-index:1000;
+
+    background:rgba(0,0,0,.65);
+
+    color:white;
+
+    padding:10px 14px;
+    border-radius:10px;
+
+    font-size:12px;
+}
+
+.legend{
+    margin-top:10px;
+    display:grid;
+    gap:6px;
+}
+
+.legend-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+}
+
+.color-box{
+    width:16px;
+    height:16px;
+    border-radius:3px;
+}
+
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="header">
+    <div>
+        <div class="logo">Severe Storms Media - Dashboard</div>
+        <div class="subtitle">
+            Mapbox + Mesonet Radar + SPC Outlooks
+        </div>
+    </div>
+
+    <div id="timeLabel"></div>
+</div>
+
+<div class="sidebar">
+
+    <div class="section">
+
+        <div class="section-title">
+            Radar Controls
+        </div>
+
+        <label>Radar Opacity</label>
+
+        <input
+            type="range"
+            id="opacitySlider"
+            min="0"
+            max="100"
+            value="75"
+        >
+
+        <div id="opacityValue">
+            75%
+        </div>
+
+    </div>
+
+    <div class="section">
+
+        <div class="section-title">
+            SPC Outlooks
+        </div>
+
+        <button id="day1Btn">
+            Load Day 1 Outlook
+        </button>
+
+        <button id="day2Btn">
+            Load Day 2 Outlook
+        </button>
+
+        <button id="day3Btn">
+            Load Day 3 Outlook
+        </button>
+
+        <button id="clearBtn">
+            Clear Outlook
+        </button>
+
+    </div>
+
+    <div class="section">
+
+        <div class="section-title">
+            Outlook Legend
+        </div>
+
+        <div class="legend">
+
+            <div class="legend-item">
+                <div class="color-box" style="background:#55ff55"></div>
+                TSTM
+            </div>
+
+            <div class="legend-item">
+                <div class="color-box" style="background:#00aaff"></div>
+                MRGL
+            </div>
+
+            <div class="legend-item">
+                <div class="color-box" style="background:#ffff00"></div>
+                SLGT
+            </div>
+
+            <div class="legend-item">
+                <div class="color-box" style="background:#ff9900"></div>
+                ENH
+            </div>
+
+            <div class="legend-item">
+                <div class="color-box" style="background:#ff0000"></div>
+                MDT
+            </div>
+
+            <div class="legend-item">
+                <div class="color-box" style="background:#ff00ff"></div>
+                HIGH
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="status">
+    Severe Storms Media - Web Application
+</div>
+
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.5.0/mapbox-gl.js"></script>
+
+<script>
+
+mapboxgl.accessToken = "pk.eyJ1Ijoiam9leWNyZWF0b3IiLCJhIjoiY21xZWNmcjA1MWFrZDJ5cG93cG8wc3NvcCJ9.Ky4Z1kNOF5MKuYh7AbbodQ";
+
+const map = new mapboxgl.Map({
+    container: "map",
+    style: "mapbox://styles/mapbox/satellite-streets-v12",
+    center: [-97.5,35.4],
+    zoom: 5,
+    antialias:true
+});
+
+map.addControl(
+    new mapboxgl.NavigationControl(),
+    "top-right"
+);
+
+const SPC_URLS = {
+    day1: "https://www.spc.noaa.gov/products/outlook/day1otlk_cat.nolyr.geojson",
+    day2: "https://www.spc.noaa.gov/products/outlook/day2otlk_cat.nolyr.geojson",
+    day3: "https://www.spc.noaa.gov/products/outlook/day3otlk_cat.nolyr.geojson"
+};
+
+map.on("load",()=>{
+
+    map.addSource("radar",{
+        type:"raster",
+        tiles:[
+            "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png"
+        ],
+        tileSize:256
+    });
+
+    map.addLayer({
+        id:"radar-layer",
+        type:"raster",
+        source:"radar",
+        paint:{
+            "raster-opacity":0.75
+        }
+    });
+
+});
+
+async function loadSPC(day){
+
+    try{
+
+        clearSPC();
+
+        const response = await fetch(SPC_URLS[day]);
+        const geojson = await response.json();
+
+        map.addSource("spc",{
+            type:"geojson",
+            data:geojson
+        });
+
+        map.addLayer({
+            id:"spc-fill",
+            type:"fill",
+            source:"spc",
+            paint:{
+                "fill-color":[
+                    "match",
+                    ["get","LABEL"],
+
+                    "TSTM","#55ff55",
+                    "MRGL","#00aaff",
+                    "SLGT","#ffff00",
+                    "ENH","#ff9900",
+                    "MDT","#ff0000",
+                    "HIGH","#ff00ff",
+
+                    "#cccccc"
+                ],
+                "fill-opacity":0.25
+            }
+        });
+
+        map.addLayer({
+            id:"spc-line",
+            type:"line",
+            source:"spc",
+            paint:{
+                "line-color":[
+                    "match",
+                    ["get","LABEL"],
+
+                    "TSTM","#55ff55",
+                    "MRGL","#00aaff",
+                    "SLGT","#ffff00",
+                    "ENH","#ff9900",
+                    "MDT","#ff0000",
+                    "HIGH","#ff00ff",
+
+                    "#ffffff"
+                ],
+                "line-width":3
+            }
+        });
+
+    }catch(err){
+        console.error(err);
+        alert("Unable to load SPC outlook.");
+    }
+}
+
+function clearSPC(){
+
+    if(map.getLayer("spc-fill"))
+        map.removeLayer("spc-fill");
+
+    if(map.getLayer("spc-line"))
+        map.removeLayer("spc-line");
+
+    if(map.getSource("spc"))
+        map.removeSource("spc");
+}
+
+document
+.getElementById("day1Btn")
+.addEventListener("click",()=>loadSPC("day1"));
+
+document
+.getElementById("day2Btn")
+.addEventListener("click",()=>loadSPC("day2"));
+
+document
+.getElementById("day3Btn")
+.addEventListener("click",()=>loadSPC("day3"));
+
+document
+.getElementById("clearBtn")
+.addEventListener("click",clearSPC);
+
+const slider =
+document.getElementById("opacitySlider");
+
+const opacityText =
+document.getElementById("opacityValue");
+
+slider.addEventListener("input",()=>{
+
+    const opacity =
+    slider.value / 100;
+
+    opacityText.textContent =
+    slider.value + "%";
+
+    if(map.getLayer("radar-layer")){
+
+        map.setPaintProperty(
+            "radar-layer",
+            "raster-opacity",
+            opacity
+        );
+
+    }
+
+});
+
+function updateClock(){
+
+    const now = new Date();
+
+    document.getElementById("timeLabel")
+        .innerText =
+        now.toLocaleString();
+
+}
+
+updateClock();
+setInterval(updateClock,1000);
+
+</script>
+
+</body>
+</html>
