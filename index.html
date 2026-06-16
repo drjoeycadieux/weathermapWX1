@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>WeatherFront Demo</title>
+<title>Severe Storms Media - Dashboard</title>
 
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.5.0/mapbox-gl.css" rel="stylesheet">
 
@@ -69,6 +69,8 @@ html,body{
     left:12px;
 
     width:300px;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
 
     z-index:1000;
 
@@ -81,6 +83,14 @@ html,body{
     padding:18px;
 
     color:white;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
 }
 
 .section{
@@ -153,6 +163,37 @@ input[type=range]{
     border-radius:3px;
 }
 
+/* Custom styled popup elements to integrate with the layout's dark palette */
+.mapboxgl-popup-content {
+    background: rgba(15, 23, 42, 0.96) !important;
+    color: #f8fafc !important;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    padding: 14px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+    max-width: 280px;
+}
+.mapboxgl-popup-anchor-top .mapboxgl-popup-tip { border-bottom-color: rgba(15, 23, 42, 0.96) !important; }
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip { border-top-color: rgba(15, 23, 42, 0.96) !important; }
+.mapboxgl-popup-anchor-left .mapboxgl-popup-tip { border-right-color: rgba(15, 23, 42, 0.96) !important; }
+.mapboxgl-popup-anchor-right .mapboxgl-popup-tip { border-left-color: rgba(15, 23, 42, 0.96) !important; }
+.mapboxgl-popup-close-button {
+    color: #94a3b8 !important;
+    padding: 4px 8px !important;
+    font-size: 14px;
+}
+.mapboxgl-popup-close-button:hover {
+    background: transparent !important;
+    color: #fff !important;
+}
+
+label {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 4px;
+    color: #94a3b8;
+}
+
 </style>
 </head>
 <body>
@@ -163,7 +204,7 @@ input[type=range]{
     <div>
         <div class="logo">Severe Storms Media - Dashboard</div>
         <div class="subtitle">
-            Mapbox + Mesonet Radar + SPC Outlooks
+            Mapbox + NEXRAD + SPC Outlooks + ECCC Alerts
         </div>
     </div>
 
@@ -173,13 +214,10 @@ input[type=range]{
 <div class="sidebar">
 
     <div class="section">
-
         <div class="section-title">
-            Radar Controls
+            US Radar Controls (IEM)
         </div>
-
         <label>Radar Opacity</label>
-
         <input
             type="range"
             id="opacitySlider"
@@ -187,83 +225,64 @@ input[type=range]{
             max="100"
             value="75"
         >
-
-        <div id="opacityValue">
-            75%
-        </div>
-
+        <div id="opacityValue">75%</div>
     </div>
 
     <div class="section">
+        <div class="section-title">
+            Canada Weather Alerts (ECCC)
+        </div>
+        <label>Alerts Opacity</label>
+        <input
+            type="range"
+            id="canadaAlertsSlider"
+            min="0"
+            max="100"
+            value="60"
+        >
+        <div id="canadaAlertsValue">60%</div>
+    </div>
 
+    <div class="section">
         <div class="section-title">
             SPC Outlooks
         </div>
-
-        <button id="day1Btn">
-            Load Day 1 Outlook
-        </button>
-
-        <button id="day2Btn">
-            Load Day 2 Outlook
-        </button>
-
-        <button id="day3Btn">
-            Load Day 3 Outlook
-        </button>
-
-        <button id="clearBtn">
-            Clear Outlook
-        </button>
-
+        <button id="day1Btn">Load Day 1 Outlook</button>
+        <button id="day2Btn">Load Day 2 Outlook</button>
+        <button id="day3Btn">Load Day 3 Outlook</button>
+        <button id="clearBtn">Clear Outlook</button>
     </div>
 
     <div class="section">
-
         <div class="section-title">
-            Outlook Legend
+            SPC Outlook Legend
         </div>
-
         <div class="legend">
-
             <div class="legend-item">
-                <div class="color-box" style="background:#55ff55"></div>
-                TSTM
+                <div class="color-box" style="background:#55ff55"></div>TSTM
             </div>
-
             <div class="legend-item">
-                <div class="color-box" style="background:#00aaff"></div>
-                MRGL
+                <div class="color-box" style="background:#00aaff"></div>MRGL
             </div>
-
             <div class="legend-item">
-                <div class="color-box" style="background:#ffff00"></div>
-                SLGT
+                <div class="color-box" style="background:#ffff00"></div>SLGT
             </div>
-
             <div class="legend-item">
-                <div class="color-box" style="background:#ff9900"></div>
-                ENH
+                <div class="color-box" style="background:#ff9900"></div>ENH
             </div>
-
             <div class="legend-item">
-                <div class="color-box" style="background:#ff0000"></div>
-                MDT
+                <div class="color-box" style="background:#ff0000"></div>MDT
             </div>
-
             <div class="legend-item">
-                <div class="color-box" style="background:#ff00ff"></div>
-                HIGH
+                <div class="color-box" style="background:#ff00ff"></div>HIGH
             </div>
-
         </div>
-
     </div>
 
 </div>
 
 <div class="status">
-    Severe Storms Media - Web Application
+    Severe Storms Media - Transnational Hazard Tracking
 </div>
 
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.5.0/mapbox-gl.js"></script>
@@ -275,8 +294,8 @@ mapboxgl.accessToken = "pk.eyJ1Ijoiam9leWNyZWF0b3IiLCJhIjoiY21xZWNmcjA1MWFrZDJ5c
 const map = new mapboxgl.Map({
     container: "map",
     style: "mapbox://styles/mapbox/satellite-streets-v12",
-    center: [-97.5,35.4],
-    zoom: 5,
+    center: [-85.0, 46.0], // Centered closer to the US/Canada border lines
+    zoom: 4.5,
     antialias:true
 });
 
@@ -291,8 +310,20 @@ const SPC_URLS = {
     day3: "https://www.spc.noaa.gov/products/outlook/day3otlk_cat.nolyr.geojson"
 };
 
+const OUTLOOK_DESCRIPTIONS = {
+    "TSTM": "<strong style='color:#55ff55;'>Thunderstorms</strong><br>General or non-severe thunderstorms are expected. Lightning, flooding, and small hail threats exist.",
+    "MRGL": "<strong style='color:#38bdf8;'>Marginal Risk (Level 1)</strong><br>Isolated severe thunderstorms are possible. Limited in organization, duration, or coverage area.",
+    "SLGT": "<strong style='color:#eab308;'>Slight Risk (Level 2)</strong><br>Scattered severe storms are possible. Short-lived or localized activity, but isolated intense structures remain possible.",
+    "ENH":  "<strong style='color:#f97316;'>Enhanced Risk (Level 3)</strong><br>Numerous severe storms are possible. More persistent and widespread hazards with several intense convective instances.",
+    "MDT":  "<strong style='color:#ef4444;'>Moderate Risk (Level 4)</strong><br>Widespread severe storms are likely. Expect long-lived, intense severe weather events including significant tornadoes or wind damage.",
+    "HIGH": "<strong style='color:#ec4899;'>High Risk (Level 5)</strong><br>Widespread severe storms are expected. Particularly dangerous, long-lived outbreaks featuring destructive tornadoes or violent derecho winds."
+};
+
+let currentPopup = null;
+
 map.on("load",()=>{
 
+    // 1. Existing US NEXRAD Radar Source
     map.addSource("radar",{
         type:"raster",
         tiles:[
@@ -310,12 +341,57 @@ map.on("load",()=>{
         }
     });
 
+    // 2. ENVIRONMENT CANADA LIVE WEATHER ALERTS INTEGRATION (MSC GeoMet)
+    // Uses the official 'Current-Alerts' live vector layer parsed via standard WMS tile requests
+    map.addSource("canada-alerts", {
+        type: "raster",
+        tiles: [
+            "https://geo.weather.gc.ca/geomet?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX={bbox-epsg-3857}&CRS=EPSG:3857&WIDTH=256&HEIGHT=256&LAYERS=Current-Alerts&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"
+        ],
+        tileSize: 256
+    });
+
+    map.addLayer({
+        id: "canada-alerts-layer",
+        type: "raster",
+        source: "canada-alerts",
+        paint: {
+            "raster-opacity": 0.60
+        }
+    });
+
+    // Handle clicks within the boundary of an SPC Outlook polygon
+    map.on("click", "spc-fill", (e) => {
+        if (!e.features.length) return;
+
+        const label = e.features[0].properties.LABEL;
+        const infoHtml = OUTLOOK_DESCRIPTIONS[label] || `<strong>${label}</strong><br>Convective severe weather forecast layer area.`;
+
+        openPopup(e.lngLat, infoHtml);
+    });
+
+    map.on("mouseenter", "spc-fill", () => {
+        map.getCanvas().style.cursor = "pointer";
+    });
+
+    map.on("mouseleave", "spc-fill", () => {
+        map.getCanvas().style.cursor = "";
+    });
+
 });
 
+// Helper function to handle popups seamlessly
+function openPopup(lngLat, contentHtml) {
+    if (currentPopup) currentPopup.remove();
+
+    currentPopup = new mapboxgl.Popup({ closeOnClick: true })
+        .setLngLat(lngLat)
+        .setHTML(`<div style="font-size: 13px; line-height: 1.45;">${contentHtml}</div>`)
+        .addTo(map);
+}
+
 async function loadSPC(day){
-
     try{
-
         clearSPC();
 
         const response = await fetch(SPC_URLS[day]);
@@ -334,14 +410,12 @@ async function loadSPC(day){
                 "fill-color":[
                     "match",
                     ["get","LABEL"],
-
                     "TSTM","#55ff55",
                     "MRGL","#00aaff",
                     "SLGT","#ffff00",
                     "ENH","#ff9900",
                     "MDT","#ff0000",
                     "HIGH","#ff00ff",
-
                     "#cccccc"
                 ],
                 "fill-opacity":0.25
@@ -356,14 +430,12 @@ async function loadSPC(day){
                 "line-color":[
                     "match",
                     ["get","LABEL"],
-
                     "TSTM","#55ff55",
                     "MRGL","#00aaff",
                     "SLGT","#ffff00",
                     "ENH","#ff9900",
                     "MDT","#ff0000",
                     "HIGH","#ff00ff",
-
                     "#ffffff"
                 ],
                 "line-width":3
@@ -377,67 +449,47 @@ async function loadSPC(day){
 }
 
 function clearSPC(){
-
-    if(map.getLayer("spc-fill"))
-        map.removeLayer("spc-fill");
-
-    if(map.getLayer("spc-line"))
-        map.removeLayer("spc-line");
-
-    if(map.getSource("spc"))
-        map.removeSource("spc");
+    if (currentPopup) {
+        currentPopup.remove();
+        currentPopup = null;
+    }
+    if(map.getLayer("spc-fill")) map.removeLayer("spc-fill");
+    if(map.getLayer("spc-line")) map.removeLayer("spc-line");
+    if(map.getSource("spc")) map.removeSource("spc");
 }
 
-document
-.getElementById("day1Btn")
-.addEventListener("click",()=>loadSPC("day1"));
+document.getElementById("day1Btn").addEventListener("click",()=>loadSPC("day1"));
+document.getElementById("day2Btn").addEventListener("click",()=>loadSPC("day2"));
+document.getElementById("day3Btn").addEventListener("click",()=>loadSPC("day3"));
+document.getElementById("clearBtn").addEventListener("click",clearSPC);
 
-document
-.getElementById("day2Btn")
-.addEventListener("click",()=>loadSPC("day2"));
-
-document
-.getElementById("day3Btn")
-.addEventListener("click",()=>loadSPC("day3"));
-
-document
-.getElementById("clearBtn")
-.addEventListener("click",clearSPC);
-
-const slider =
-document.getElementById("opacitySlider");
-
-const opacityText =
-document.getElementById("opacityValue");
+// US Radar Slider Controls
+const slider = document.getElementById("opacitySlider");
+const opacityText = document.getElementById("opacityValue");
 
 slider.addEventListener("input",()=>{
-
-    const opacity =
-    slider.value / 100;
-
-    opacityText.textContent =
-    slider.value + "%";
-
+    const opacity = slider.value / 100;
+    opacityText.textContent = slider.value + "%";
     if(map.getLayer("radar-layer")){
-
-        map.setPaintProperty(
-            "radar-layer",
-            "raster-opacity",
-            opacity
-        );
-
+        map.setPaintProperty("radar-layer", "raster-opacity", opacity);
     }
+});
 
+// Canada Alerts Slider Controls
+const canadaAlertsSlider = document.getElementById("canadaAlertsSlider");
+const canadaAlertsText = document.getElementById("canadaAlertsValue");
+
+canadaAlertsSlider.addEventListener("input",()=>{
+    const opacity = canadaAlertsSlider.value / 100;
+    canadaAlertsText.textContent = canadaAlertsSlider.value + "%";
+    if(map.getLayer("canada-alerts-layer")){
+        map.setPaintProperty("canada-alerts-layer", "raster-opacity", opacity);
+    }
 });
 
 function updateClock(){
-
     const now = new Date();
-
-    document.getElementById("timeLabel")
-        .innerText =
-        now.toLocaleString();
-
+    document.getElementById("timeLabel").innerText = now.toLocaleString();
 }
 
 updateClock();
