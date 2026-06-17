@@ -248,6 +248,7 @@ label {
             SPC Outlooks
         </div>
         <button id="day1Btn">Load Day 1 Outlook</button>
+        <button id="day1TornadoBtn" style="background: #2e1065; border: 1px solid #6b21a8;">⚡ Load Day 1 Tornado Risk</button>
         <button id="day2Btn">Load Day 2 Outlook</button>
         <button id="day3Btn">Load Day 3 Outlook</button>
         <button id="clearBtn">Clear Outlook</button>
@@ -294,7 +295,7 @@ mapboxgl.accessToken = "pk.eyJ1Ijoiam9leWNyZWF0b3IiLCJhIjoiY21xZWNmcjA1MWFrZDJ5c
 const map = new mapboxgl.Map({
     container: "map",
     style: "mapbox://styles/mapbox/satellite-streets-v12",
-    center: [-85.0, 46.0], // Centered closer to the US/Canada border lines
+    center: [-85.0, 46.0], 
     zoom: 4.5,
     antialias:true
 });
@@ -306,6 +307,7 @@ map.addControl(
 
 const SPC_URLS = {
     day1: "https://www.spc.noaa.gov/products/outlook/day1otlk_cat.nolyr.geojson",
+    day1tornado: "https://www.spc.noaa.gov/products/outlook/day1otlk_torn.nolyr.geojson",
     day2: "https://www.spc.noaa.gov/products/outlook/day2otlk_cat.nolyr.geojson",
     day3: "https://www.spc.noaa.gov/products/outlook/day3otlk_cat.nolyr.geojson"
 };
@@ -316,7 +318,16 @@ const OUTLOOK_DESCRIPTIONS = {
     "SLGT": "<strong style='color:#eab308;'>Slight Risk (Level 2)</strong><br>Scattered severe storms are possible. Short-lived or localized activity, but isolated intense structures remain possible.",
     "ENH":  "<strong style='color:#f97316;'>Enhanced Risk (Level 3)</strong><br>Numerous severe storms are possible. More persistent and widespread hazards with several intense convective instances.",
     "MDT":  "<strong style='color:#ef4444;'>Moderate Risk (Level 4)</strong><br>Widespread severe storms are likely. Expect long-lived, intense severe weather events including significant tornadoes or wind damage.",
-    "HIGH": "<strong style='color:#ec4899;'>High Risk (Level 5)</strong><br>Widespread severe storms are expected. Particularly dangerous, long-lived outbreaks featuring destructive tornadoes or violent derecho winds."
+    "HIGH": "<strong style='color:#ec4899;'>High Risk (Level 5)</strong><br>Widespread severe storms are expected. Particularly dangerous, long-lived outbreaks featuring destructive tornadoes or violent derecho winds.",
+    
+    // Probabilistic Tornado Risk Descriptions
+    "0.02": "<strong style='color:#008b00;'>2% Tornado Probability</strong><br>Low risk. Probability of a tornado occurring within 25 miles of any point in this zone.",
+    "0.05": "<strong style='color:#8b4513;'>5% Tornado Probability</strong><br>Slight risk. Higher probability of localized tornadic setups within 25 miles of a point.",
+    "0.10": "<strong style='color:#ffc0cb;'>10% Tornado Probability</strong><br>Elevated risk. Significant atmospheric dynamics are supportive of tornadic development.",
+    "0.15": "<strong style='color:#ff0000;'>15% Tornado Probability</strong><br>High risk. Widespread or multi-cell tornadic threat structures present.",
+    "0.30": "<strong style='color:#ff00ff;'>30% Tornado Probability</strong><br>Severe outbreak potential. Substantial threat for cyclic and violent long-track tornadoes.",
+    "0.45": "<strong style='color:#9400d3;'>45% Tornado Probability</strong><br>Extreme risk threat. Historically indicative of major severe weather and intense tornado outbreaks.",
+    "0.60": "<strong style='color:#1e90ff;'>60% Tornado Probability</strong><br>Maximized risk category. Widespread, catastrophic destructive tornado threat expected."
 };
 
 let currentPopup = null;
@@ -342,7 +353,6 @@ map.on("load",()=>{
     });
 
     // 2. ENVIRONMENT CANADA LIVE WEATHER ALERTS INTEGRATION (MSC GeoMet)
-    // Uses the official 'Current-Alerts' live vector layer parsed via standard WMS tile requests
     map.addSource("canada-alerts", {
         type: "raster",
         tiles: [
@@ -364,8 +374,9 @@ map.on("load",()=>{
     map.on("click", "spc-fill", (e) => {
         if (!e.features.length) return;
 
-        const label = e.features[0].properties.LABEL;
-        const infoHtml = OUTLOOK_DESCRIPTIONS[label] || `<strong>${label}</strong><br>Convective severe weather forecast layer area.`;
+        // Checks LABEL first, falls back to raw numeric value string for tornado overlays
+        const label = e.features[0].properties.LABEL || String(e.features[0].properties.LABEL_NUM);
+        const infoHtml = OUTLOOK_DESCRIPTIONS[label] || `<strong>Risk Layer Area</strong><br>Convective severe weather parameters active. Value: ${label}`;
 
         openPopup(e.lngLat, infoHtml);
     });
@@ -378,9 +389,22 @@ map.on("load",()=>{
         map.getCanvas().style.cursor = "";
     });
 
+    // Handle clicks anywhere on the Canada Alerts raster map layer
+    map.on("click", "canada-alerts-layer", (e) => {
+        const infoHtml = `<strong style="color: #38bdf8;">Environment Canada Live Alerts</strong><br>This layer represents active hazards, warnings, watches, and advisory statements queried directly via the official MSC GeoMet meteorological server.`;
+        openPopup(e.lngLat, infoHtml);
+    });
+
+    map.on("mouseenter", "canada-alerts-layer", () => {
+        map.getCanvas().style.cursor = "pointer";
+    });
+
+    map.on("mouseleave", "canada-alerts-layer", () => {
+        map.getCanvas().style.cursor = "";
+    });
+
 });
 
-// Helper function to handle popups seamlessly
 function openPopup(lngLat, contentHtml) {
     if (currentPopup) currentPopup.remove();
 
@@ -402,23 +426,56 @@ async function loadSPC(day){
             data:geojson
         });
 
+        // Determine lookups based on standard categorical codes or numerical probabilities
+        const fillExpression = (day === 'day1tornado') ? [
+            "match", ["get", "LABEL"],
+            "0.02", "#008b00",
+            "0.05", "#8b4513",
+            "0.10", "#ffc0cb",
+            "0.15", "#ff0000",
+            "0.30", "#ff00ff",
+            "0.45", "#9400d3",
+            "0.60", "#1e90ff",
+            "#cccccc"
+        ] : [
+            "match", ["get", "LABEL"],
+            "TSTM", "#55ff55",
+            "MRGL", "#00aaff",
+            "SLGT", "#ffff00",
+            "ENH",  "#ff9900",
+            "MDT",  "#ff0000",
+            "HIGH", "#ff00ff",
+            "#cccccc"
+        ];
+
+        const lineExpression = (day === 'day1tornado') ? [
+            "match", ["get", "LABEL"],
+            "0.02", "#008b00",
+            "0.05", "#8b4513",
+            "0.10", "#ffc0cb",
+            "0.15", "#ff0000",
+            "0.30", "#ff00ff",
+            "0.45", "#9400d3",
+            "0.60", "#1e90ff",
+            "#ffffff"
+        ] : [
+            "match", ["get", "LABEL"],
+            "TSTM", "#55ff55",
+            "MRGL", "#00aaff",
+            "SLGT", "#ffff00",
+            "ENH",  "#ff9900",
+            "MDT",  "#ff0000",
+            "HIGH", "#ff00ff",
+            "#ffffff"
+        ];
+
         map.addLayer({
             id:"spc-fill",
             type:"fill",
             source:"spc",
             paint:{
-                "fill-color":[
-                    "match",
-                    ["get","LABEL"],
-                    "TSTM","#55ff55",
-                    "MRGL","#00aaff",
-                    "SLGT","#ffff00",
-                    "ENH","#ff9900",
-                    "MDT","#ff0000",
-                    "HIGH","#ff00ff",
-                    "#cccccc"
-                ],
-                "fill-opacity":0.25
+                "fill-color": fillExpression,
+                "fill-opacity": day === 'day1tornado' ? 0.40 : 0.25
             }
         });
 
@@ -427,24 +484,14 @@ async function loadSPC(day){
             type:"line",
             source:"spc",
             paint:{
-                "line-color":[
-                    "match",
-                    ["get","LABEL"],
-                    "TSTM","#55ff55",
-                    "MRGL","#00aaff",
-                    "SLGT","#ffff00",
-                    "ENH","#ff9900",
-                    "MDT","#ff0000",
-                    "HIGH","#ff00ff",
-                    "#ffffff"
-                ],
-                "line-width":3
+                "line-color": lineExpression,
+                "line-width": 3
             }
         });
 
     }catch(err){
         console.error(err);
-        alert("Unable to load SPC outlook.");
+        alert("Unable to load SPC outlook data layer.");
     }
 }
 
@@ -459,6 +506,7 @@ function clearSPC(){
 }
 
 document.getElementById("day1Btn").addEventListener("click",()=>loadSPC("day1"));
+document.getElementById("day1TornadoBtn").addEventListener("click",()=>loadSPC("day1tornado"));
 document.getElementById("day2Btn").addEventListener("click",()=>loadSPC("day2"));
 document.getElementById("day3Btn").addEventListener("click",()=>loadSPC("day3"));
 document.getElementById("clearBtn").addEventListener("click",clearSPC);
