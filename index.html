@@ -9,7 +9,6 @@
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.5.0/mapbox-gl.css" rel="stylesheet">
 
 <style>
-
 *{
     margin:0;
     padding:0;
@@ -35,21 +34,15 @@ html,body{
     left:12px;
     right:12px;
     height:60px;
-
     z-index:1000;
-
     display:flex;
     justify-content:space-between;
     align-items:center;
-
     padding:0 20px;
-
     background:rgba(8,12,20,.92);
     backdrop-filter:blur(12px);
-
     border:1px solid rgba(255,255,255,.08);
     border-radius:14px;
-
     color:white;
 }
 
@@ -67,21 +60,15 @@ html,body{
     position:absolute;
     top:90px;
     left:12px;
-
     width:300px;
     max-height: calc(100vh - 120px);
     overflow-y: auto;
-
     z-index:1000;
-
     background:rgba(8,12,20,.92);
     backdrop-filter:blur(12px);
-
     border:1px solid rgba(255,255,255,.08);
     border-radius:14px;
-
     padding:18px;
-
     color:white;
 }
 
@@ -108,13 +95,10 @@ button{
     width:100%;
     padding:10px;
     margin-bottom:8px;
-
     border:none;
     border-radius:8px;
-
     background:#1e293b;
     color:white;
-
     cursor:pointer;
     transition:.2s;
 }
@@ -131,16 +115,11 @@ input[type=range]{
     position:absolute;
     bottom:15px;
     right:15px;
-
     z-index:1000;
-
     background:rgba(0,0,0,.65);
-
     color:white;
-
     padding:10px 14px;
     border-radius:10px;
-
     font-size:12px;
 }
 
@@ -163,7 +142,7 @@ input[type=range]{
     border-radius:3px;
 }
 
-/* Custom styled popup elements to integrate with the layout's dark palette */
+/* Custom styled popup elements */
 .mapboxgl-popup-content {
     background: rgba(15, 23, 42, 0.96) !important;
     color: #f8fafc !important;
@@ -171,7 +150,7 @@ input[type=range]{
     border-radius: 10px;
     padding: 14px !important;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
-    max-width: 280px;
+    max-width: 290px;
 }
 .mapboxgl-popup-anchor-top .mapboxgl-popup-tip { border-bottom-color: rgba(15, 23, 42, 0.96) !important; }
 .mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip { border-top-color: rgba(15, 23, 42, 0.96) !important; }
@@ -193,7 +172,6 @@ label {
     margin-bottom: 4px;
     color: #94a3b8;
 }
-
 </style>
 </head>
 <body>
@@ -204,49 +182,35 @@ label {
     <div>
         <div class="logo">Severe Storms Media - Dashboard</div>
         <div class="subtitle">
-            Mapbox + NEXRAD + SPC Outlooks + ECCC Alerts
+            Mapbox + NEXRAD + NHC Hurricanes + SPC Outlooks + ECCC Alerts
         </div>
     </div>
-
     <div id="timeLabel"></div>
 </div>
 
 <div class="sidebar">
-
     <div class="section">
-        <div class="section-title">
-            US Radar Controls (IEM)
-        </div>
+        <div class="section-title">US Radar Controls (IEM)</div>
         <label>Radar Opacity</label>
-        <input
-            type="range"
-            id="opacitySlider"
-            min="0"
-            max="100"
-            value="75"
-        >
+        <input type="range" id="opacitySlider" min="0" max="100" value="75">
         <div id="opacityValue">75%</div>
     </div>
 
     <div class="section">
-        <div class="section-title">
-            Canada Weather Alerts (ECCC)
-        </div>
+        <div class="section-title">Canada Weather Alerts (ECCC)</div>
         <label>Alerts Opacity</label>
-        <input
-            type="range"
-            id="canadaAlertsSlider"
-            min="0"
-            max="100"
-            value="60"
-        >
+        <input type="range" id="canadaAlertsSlider" min="0" max="100" value="60">
         <div id="canadaAlertsValue">60%</div>
     </div>
 
     <div class="section">
-        <div class="section-title">
-            SPC Outlooks
-        </div>
+        <div class="section-title">NHC Hurricane Tracking</div>
+        <button id="loadHurricaneBtn" style="background: #0369a1; border: 1px solid #38bdf8;">🌀 Load Active Cyclone Tracks</button>
+        <button id="clearHurricaneBtn">Clear Hurricane Data</button>
+    </div>
+
+    <div class="section">
+        <div class="section-title">SPC Outlooks</div>
         <button id="day1Btn">Load Day 1 Outlook</button>
         <button id="day1TornadoBtn" style="background: #2e1065; border: 1px solid #6b21a8;">⚡ Load Day 1 Tornado Risk</button>
         <button id="day2Btn">Load Day 2 Outlook</button>
@@ -255,31 +219,14 @@ label {
     </div>
 
     <div class="section">
-        <div class="section-title">
-            SPC Outlook Legend
-        </div>
+        <div class="section-title">ECCC Impact System Legend</div>
         <div class="legend">
-            <div class="legend-item">
-                <div class="color-box" style="background:#55ff55"></div>TSTM
-            </div>
-            <div class="legend-item">
-                <div class="color-box" style="background:#00aaff"></div>MRGL
-            </div>
-            <div class="legend-item">
-                <div class="color-box" style="background:#ffff00"></div>SLGT
-            </div>
-            <div class="legend-item">
-                <div class="color-box" style="background:#ff9900"></div>ENH
-            </div>
-            <div class="legend-item">
-                <div class="color-box" style="background:#ff0000"></div>MDT
-            </div>
-            <div class="legend-item">
-                <div class="color-box" style="background:#ff00ff"></div>HIGH
-            </div>
+            <div class="legend-item"><div class="color-box" style="background:#dc2626"></div>Red (Extreme Impact)</div>
+            <div class="legend-item"><div class="color-box" style="background:#ea580c"></div>Orange (Significant Impact)</div>
+            <div class="legend-item"><div class="color-box" style="background:#eab308"></div>Yellow (Moderate Impact)</div>
+            <div class="legend-item"><div class="color-box" style="background:#475569"></div>Grey (Special Statement)</div>
         </div>
     </div>
-
 </div>
 
 <div class="status">
@@ -289,21 +236,17 @@ label {
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.5.0/mapbox-gl.js"></script>
 
 <script>
-
 mapboxgl.accessToken = "pk.eyJ1Ijoiam9leWNyZWF0b3IiLCJhIjoiY21xZWNmcjA1MWFrZDJ5cG93cG8wc3NvcCJ9.Ky4Z1kNOF5MKuYh7AbbodQ";
 
 const map = new mapboxgl.Map({
     container: "map",
     style: "mapbox://styles/mapbox/satellite-streets-v12",
-    center: [-85.0, 46.0], 
-    zoom: 4.5,
-    antialias:true
+    center: [-80.0, 35.0], 
+    zoom: 4.0,
+    antialias: true
 });
 
-map.addControl(
-    new mapboxgl.NavigationControl(),
-    "top-right"
-);
+map.addControl(new mapboxgl.NavigationControl(), "top-right");
 
 const SPC_URLS = {
     day1: "https://www.spc.noaa.gov/products/outlook/day1otlk_cat.nolyr.geojson",
@@ -313,101 +256,324 @@ const SPC_URLS = {
 };
 
 const OUTLOOK_DESCRIPTIONS = {
-    "TSTM": "<strong style='color:#55ff55;'>Thunderstorms</strong><br>General or non-severe thunderstorms are expected. Lightning, flooding, and small hail threats exist.",
-    "MRGL": "<strong style='color:#38bdf8;'>Marginal Risk (Level 1)</strong><br>Isolated severe thunderstorms are possible. Limited in organization, duration, or coverage area.",
-    "SLGT": "<strong style='color:#eab308;'>Slight Risk (Level 2)</strong><br>Scattered severe storms are possible. Short-lived or localized activity, but isolated intense structures remain possible.",
-    "ENH":  "<strong style='color:#f97316;'>Enhanced Risk (Level 3)</strong><br>Numerous severe storms are possible. More persistent and widespread hazards with several intense convective instances.",
-    "MDT":  "<strong style='color:#ef4444;'>Moderate Risk (Level 4)</strong><br>Widespread severe storms are likely. Expect long-lived, intense severe weather events including significant tornadoes or wind damage.",
-    "HIGH": "<strong style='color:#ec4899;'>High Risk (Level 5)</strong><br>Widespread severe storms are expected. Particularly dangerous, long-lived outbreaks featuring destructive tornadoes or violent derecho winds.",
+    "TSTM": "<strong style='color:#55ff55;'>Thunderstorms</strong><br>General or non-severe thunderstorms are expected.",
+    "MRGL": "<strong style='color:#38bdf8;'>Marginal Risk (Level 1)</strong><br>Isolated severe thunderstorms are possible.",
+    "SLGT": "<strong style='color:#eab308;'>Slight Risk (Level 2)</strong><br>Scattered severe storms are possible.",
+    "ENH":  "<strong style='color:#f97316;'>Enhanced Risk (Level 3)</strong><br>Numerous severe storms are possible.",
+    "MDT":  "<strong style='color:#ef4444;'>Moderate Risk (Level 4)</strong><br>Widespread severe storms are likely.",
+    "HIGH": "<strong style='color:#ec4899;'>High Risk (Level 5)</strong><br>Widespread, dangerous severe storm outbreaks expected.",
     
-    // Probabilistic Tornado Risk Descriptions
-    "0.02": "<strong style='color:#008b00;'>2% Tornado Probability</strong><br>Low risk. Probability of a tornado occurring within 25 miles of any point in this zone.",
-    "0.05": "<strong style='color:#8b4513;'>5% Tornado Probability</strong><br>Slight risk. Higher probability of localized tornadic setups within 25 miles of a point.",
-    "0.10": "<strong style='color:#ffc0cb;'>10% Tornado Probability</strong><br>Elevated risk. Significant atmospheric dynamics are supportive of tornadic development.",
-    "0.15": "<strong style='color:#ff0000;'>15% Tornado Probability</strong><br>High risk. Widespread or multi-cell tornadic threat structures present.",
-    "0.30": "<strong style='color:#ff00ff;'>30% Tornado Probability</strong><br>Severe outbreak potential. Substantial threat for cyclic and violent long-track tornadoes.",
-    "0.45": "<strong style='color:#9400d3;'>45% Tornado Probability</strong><br>Extreme risk threat. Historically indicative of major severe weather and intense tornado outbreaks.",
-    "0.60": "<strong style='color:#1e90ff;'>60% Tornado Probability</strong><br>Maximized risk category. Widespread, catastrophic destructive tornado threat expected."
+    "0.02": "<strong style='color:#008b00;'>2% Tornado Probability</strong><br>Low risk within 25 miles of a point.",
+    "0.05": "<strong style='color:#8b4513;'>5% Tornado Probability</strong><br>Slight risk setup within 25 miles of a point.",
+    "0.10": "<strong style='color:#ffc0cb;'>10% Tornado Probability</strong><br>Elevated risk for tornadic development.",
+    "0.15": "<strong style='color:#ff0000;'>15% Tornado Probability</strong><br>High risk of multiple tornadic setups.",
+    "0.30": "<strong style='color:#ff00ff;'>30% Tornado Probability</strong><br>Significant threat for long-track tornadoes.",
+    "0.45": "<strong style='color:#9400d3;'>45% Tornado Probability</strong><br>Extreme threat window for major outbreaks.",
+    "0.60": "<strong style='color:#1e90ff;'>60% Tornado Probability</strong><br>Maximized catastrophic tornado risk footprint."
 };
 
 let currentPopup = null;
 
-map.on("load",()=>{
-
-    // 1. Existing US NEXRAD Radar Source
-    map.addSource("radar",{
-        type:"raster",
-        tiles:[
-            "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png"
-        ],
-        tileSize:256
-    });
-
-    map.addLayer({
-        id:"radar-layer",
-        type:"raster",
-        source:"radar",
-        paint:{
-            "raster-opacity":0.75
+map.on("load", async () => {
+    const layers = map.getStyle().layers;
+    let firstLabelId;
+    for (const layer of layers) {
+        if (layer.type === 'symbol') {
+            firstLabelId = layer.id;
+            break;
         }
-    });
+    }
 
-    // 2. ENVIRONMENT CANADA LIVE WEATHER ALERTS INTEGRATION (MSC GeoMet)
-    map.addSource("canada-alerts", {
+    // 1. US NEXRAD Radar Layer
+    map.addSource("radar", {
         type: "raster",
         tiles: [
-            "https://geo.weather.gc.ca/geomet?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX={bbox-epsg-3857}&CRS=EPSG:3857&WIDTH=256&HEIGHT=256&LAYERS=Current-Alerts&STYLES=&FORMAT=image/png&TRANSPARENT=TRUE"
+            "https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png"
         ],
         tileSize: 256
     });
 
     map.addLayer({
-        id: "canada-alerts-layer",
+        id: "radar-layer",
         type: "raster",
-        source: "canada-alerts",
-        paint: {
-            "raster-opacity": 0.60
-        }
-    });
+        source: "radar",
+        paint: { "raster-opacity": 0.75 }
+    }, firstLabelId);
 
-    // Handle clicks within the boundary of an SPC Outlook polygon
+    // 2. ENVIRONMENT CANADA LIVE WEATHER ALERTS
+    try {
+        const response = await fetch("https://geo.weather.gc.ca/geomet?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&typeNames=Current-Alerts&outputFormat=geojson");
+        const alertsGeoJSON = await response.json();
+
+        map.addSource("canada-alerts", {
+            type: "geojson",
+            data: alertsGeoJSON
+        });
+
+        map.addLayer({
+            id: "canada-alerts-layer",
+            type: "fill",
+            source: "canada-alerts",
+            paint: {
+                "fill-color": [
+                    "match",
+                    ["get", "risk_colour_en"],
+                    "red", "#dc2626",
+                    "orange", "#ea580c",
+                    "yellow", "#eab308",
+                    "grey", "#475569",
+                    "#334155"
+                ],
+                "fill-opacity": 0.60
+            }
+        }, firstLabelId);
+
+        map.addLayer({
+            id: "canada-alerts-outline",
+            type: "line",
+            source: "canada-alerts",
+            paint: {
+                "line-color": [
+                    "match",
+                    ["get", "risk_colour_en"],
+                    "red", "#f87171",
+                    "orange", "#fb923c",
+                    "yellow", "#fef08a",
+                    "grey", "#94a3b8",
+                    "#ffffff"
+                ],
+                "line-width": 2,
+                "line-opacity": 0.85
+            }
+        }, firstLabelId);
+
+        map.on("click", "canada-alerts-layer", (e) => {
+            if (!e.features.length) return;
+            const props = e.features[0].properties;
+            
+            const alertTitle = props.alert_name_en || "Active Hazard Alert";
+            const alertRegion = props.feature_name_en || "Affected Grid Zone";
+            const alertText = props.alert_text_en || "Detailed metadata parameters are unavailable.";
+            const rawColor = props.risk_colour_en ? props.risk_colour_en.toLowerCase() : "unknown";
+
+            let badgeHex = "#94a3b8";
+            let displayColor = "Notice";
+            
+            if(rawColor === "red") { badgeHex = "#f87171"; displayColor = "Red"; }
+            if(rawColor === "orange") { badgeHex = "#fb923c"; displayColor = "Orange"; }
+            if(rawColor === "yellow") { badgeHex = "#fef08a"; displayColor = "Yellow"; }
+            if(rawColor === "grey") { badgeHex = "#94a3b8"; displayColor = "Grey"; }
+
+            const parsedText = alertText.replace(/\n/g, "<br>");
+
+            const infoHtml = `
+                <strong style="color: #38bdf8; font-size:14px;">ECCC Impact Alert</strong><br>
+                <span style="font-size:10px; text-transform: uppercase; background:#0f172a; padding:3px 8px; border-radius:4px; color:${badgeHex}; font-weight:bold; border:1px solid ${badgeHex}; display:inline-block; margin-top:4px;">
+                    ● ${displayColor} Level Risk
+                </span>
+                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:8px 0;">
+                <span style="font-weight:600; color:#ffffff; font-size:13px; line-height:1.35;">${alertTitle}</span>
+                <p style="margin:4px 0 6px 0; color:#7dd3fc; font-size:11px; font-weight:500;">📍 Zone: ${alertRegion}</p>
+                <div style="margin-top:6px; color:#cbd5e1; font-size:12px; max-height:150px; overflow-y:auto; padding-right:4px; line-height:1.5;">${parsedText}</div>
+            `;
+
+            openPopup(e.lngLat, infoHtml);
+        });
+
+        map.on("mouseenter", "canada-alerts-layer", () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", "canada-alerts-layer", () => { map.getCanvas().style.cursor = ""; });
+
+    } catch (err) {
+        console.error("Error loading or parsing ECCC data payload:", err);
+    }
+
+    // SPC Click Handlers
     map.on("click", "spc-fill", (e) => {
         if (!e.features.length) return;
-
-        // Checks LABEL first, falls back to raw numeric value string for tornado overlays
         const label = e.features[0].properties.LABEL || String(e.features[0].properties.LABEL_NUM);
-        const infoHtml = OUTLOOK_DESCRIPTIONS[label] || `<strong>Risk Layer Area</strong><br>Convective severe weather parameters active. Value: ${label}`;
-
+        const infoHtml = OUTLOOK_DESCRIPTIONS[label] || `<strong>Risk Layer Area</strong><br>Value: ${label}`;
         openPopup(e.lngLat, infoHtml);
     });
 
-    map.on("mouseenter", "spc-fill", () => {
-        map.getCanvas().style.cursor = "pointer";
-    });
-
-    map.on("mouseleave", "spc-fill", () => {
-        map.getCanvas().style.cursor = "";
-    });
-
-    // Handle clicks anywhere on the Canada Alerts raster map layer
-    map.on("click", "canada-alerts-layer", (e) => {
-        const infoHtml = `<strong style="color: #38bdf8;">Environment Canada Live Alerts</strong><br>This layer represents active hazards, warnings, watches, and advisory statements queried directly via the official MSC GeoMet meteorological server.`;
-        openPopup(e.lngLat, infoHtml);
-    });
-
-    map.on("mouseenter", "canada-alerts-layer", () => {
-        map.getCanvas().style.cursor = "pointer";
-    });
-
-    map.on("mouseleave", "canada-alerts-layer", () => {
-        map.getCanvas().style.cursor = "";
-    });
-
+    map.on("mouseenter", "spc-fill", () => { map.getCanvas().style.cursor = "pointer"; });
+    map.on("mouseleave", "spc-fill", () => { map.getCanvas().style.cursor = ""; });
 });
+
+// ==========================================================
+// CATCH-ALL NHC MODULE RETRIEVING LAYERS 0, 1, 2, AND 3
+// ==========================================================
+async function loadNHCTracks() {
+    try {
+        clearNHC();
+
+        // Safe operational API endpoints matching NOAA endpoints
+        const urlDisturbances = "https://mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer/0/query?where=1%3D1&outFields=*&f=geojson";
+        const urlAreasOfDev   = "https://mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer/1/query?where=1%3D1&outFields=*&f=geojson";
+        const urlTrackPoints  = "https://mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer/2/query?where=1%3D1&outFields=*&f=geojson";
+        const urlTrackLines   = "https://mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer/3/query?where=1%3D1&outFields=*&f=geojson";
+
+        // Query layers in parallel
+        const [res0, res1, res2, res3] = await Promise.all([
+            fetch(urlDisturbances).then(r => r.json()),
+            fetch(urlAreasOfDev).then(r => r.json()),
+            fetch(urlTrackPoints).then(r => r.json()),
+            fetch(urlTrackLines).then(r => r.json())
+        ]);
+
+        // Live visual log outputs inside browser terminal
+        console.log("NHC Layer 0 (Disturbances):", res0.features?.length || 0);
+        console.log("NHC Layer 1 (Areas of Dev):", res1.features?.length || 0);
+        console.log("NHC Layer 2 (Track Points):", res2.features?.length || 0);
+        console.log("NHC Layer 3 (Track Lines):",  res3.features?.length || 0);
+
+        const layers = map.getStyle().layers;
+        let firstLabelId;
+        for (const layer of layers) {
+            if (layer.type === 'symbol') { firstLabelId = layer.id; break; }
+        }
+
+        let dynamicBounds = new mapboxgl.LngLatBounds();
+        let coordinatesFound = false;
+
+        // ---- 1. RENDER FORECAST TRACK LINES (Layer 3) ----
+        if (res3.features && res3.features.length > 0) {
+            map.addSource("nhc-track-line", { type: "geojson", data: res3 });
+            map.addLayer({
+                id: "nhc-line-layer",
+                type: "line",
+                source: "nhc-track-line",
+                paint: { "line-color": "#06b6d4", "line-width": 3, "line-dasharray": [2, 1] }
+            }, firstLabelId);
+
+            res3.features.forEach(f => {
+                if(f.geometry && f.geometry.coordinates) {
+                    f.geometry.coordinates.forEach(coord => { dynamicBounds.extend(coord); coordinatesFound = true; });
+                }
+            });
+        }
+
+        // ---- 2. RENDER FORECAST ADVISORY DOTS (Layer 2) ----
+        if (res2.features && res2.features.length > 0) {
+            map.addSource("nhc-track-pts", { type: "geojson", data: res2 });
+            map.addLayer({
+                id: "nhc-point-layer",
+                type: "circle",
+                source: "nhc-track-pts",
+                paint: {
+                    "circle-radius": 6,
+                    "circle-color": ["match", ["get", "DVLCMNT"], "HU", "#ef4444", "TS", "#f97316", "TD", "#38bdf8", "#a855f7"],
+                    "circle-stroke-width": 2,
+                    "circle-stroke-color": "#ffffff"
+                }
+            }, firstLabelId);
+
+            map.on("click", "nhc-point-layer", (e) => {
+                if (!e.features.length) return;
+                const props = e.features[0].properties;
+                const mphValue = props.INTENSITY ? Math.round(props.INTENSITY * 1.15078) : "N/A";
+                const infoHtml = `
+                    <strong style="color: #06b6d4; font-size:13px;">NHC Advisory Point</strong><br>
+                    <span style="font-weight:700; color:#fff; font-size:14px; display:inline-block; margin-top:4px;">🌀 Cyclone ${props.STORMANAME || 'Unnamed'}</span>
+                    <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:6px 0;">
+                    <p style="margin:2px 0; font-size:11px;"><b>Type:</b> ${props.DVLCMNT}</p>
+                    <p style="margin:2px 0; font-size:11px;"><b>Winds:</b> ${props.INTENSITY || 0} kts (${mphValue} mph)</p>
+                    <p style="margin:2px 0; font-size:11px;"><b>Target Horizon:</b> ${props.DATELBL || 'N/A'}</p>
+                `;
+                openPopup(e.lngLat, infoHtml);
+            });
+            map.on("mouseenter", "nhc-point-layer", () => map.getCanvas().style.cursor = "pointer");
+            map.on("mouseleave", "nhc-point-layer", () => map.getCanvas().style.cursor = "");
+        }
+
+        // ---- 3. RENDER GENESIS MONITORING DISTURBANCES (Layers 0 & 1 Combined) ----
+        const combinedDisturbances = {
+            type: "FeatureCollection",
+            features: [...(res0.features || []), ...(res1.features || [])]
+        };
+
+        if (combinedDisturbances.features.length > 0) {
+            map.addSource("nhc-disturbances", { type: "geojson", data: combinedDisturbances });
+            
+            map.addLayer({
+                id: "nhc-x-layer",
+                type: "circle",
+                source: "nhc-disturbances",
+                paint: {
+                    "circle-radius": 10,
+                    "circle-color": "#ef4444",
+                    "circle-stroke-width": 2.5,
+                    "circle-stroke-color": "#ffffff"
+                }
+            }, firstLabelId);
+
+            map.addLayer({
+                id: "nhc-x-text",
+                type: "symbol",
+                source: "nhc-disturbances",
+                layout: {
+                    "text-field": "X",
+                    "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+                    "text-size": 12,
+                    "text-allow-overlap": true
+                },
+                paint: { "text-color": "#ffffff" }
+            });
+
+            combinedDisturbances.features.forEach(f => {
+                if(f.geometry && f.geometry.coordinates) {
+                    const coords = f.geometry.type === "Point" ? f.geometry.coordinates : f.geometry.coordinates[0][0];
+                    dynamicBounds.extend(coords);
+                    coordinatesFound = true;
+                }
+            });
+
+            map.on("click", "nhc-x-layer", (e) => {
+                if (!e.features.length) return;
+                const props = e.features[0].properties;
+                
+                const infoHtml = `
+                    <strong style="color: #f87171; font-size:13px;">NHC Tropical Update</strong><br>
+                    <span style="font-weight:700; color:#ffffff; font-size:14px; display:inline-block; margin-top:4px;">❌ Disturbance Active</span>
+                    <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:6px 0;">
+                    <p style="margin:2px 0; font-size:11px;"><b>2-Day Potential:</b> ${props.DIST2DAY || props.TWO_DAY_PO || 'N/A'}</p>
+                    <p style="margin:2px 0; font-size:11px;"><b>7-Day Potential:</b> ${props.DIST7DAY || props.SEVEN_DAY_P || 'N/A'}</p>
+                    <div style="margin-top:6px; color:#cbd5e1; font-size:11px; max-height:100px; overflow-y:auto; line-height:1.4;">${props.SUMMARY || 'System monitoring active. View nhc.noaa.gov for official advisory statements.'}</div>
+                `;
+                openPopup(e.lngLat, infoHtml);
+            });
+
+            map.on("mouseenter", "nhc-x-layer", () => map.getCanvas().style.cursor = "pointer");
+            map.on("mouseleave", "nhc-x-layer", () => map.getCanvas().style.cursor = "");
+        }
+
+        // Camera frame bounding control logic
+        if (coordinatesFound) {
+            map.fitBounds(dynamicBounds, { padding: 100, maxZoom: 5 });
+        } else {
+            alert("No tropical assets or development footprints found on active layers at this second.");
+        }
+
+    } catch (err) {
+        console.error("Critical error parsing multi-tier hurricane data elements:", err);
+    }
+}
+
+function clearNHC() {
+    if (currentPopup) { currentPopup.remove(); currentPopup = null; }
+    if (map.getLayer("nhc-line-layer")) map.removeLayer("nhc-line-layer");
+    if (map.getLayer("nhc-point-layer")) map.removeLayer("nhc-point-layer");
+    if (map.getLayer("nhc-x-layer")) map.removeLayer("nhc-x-layer");
+    if (map.getLayer("nhc-x-text")) map.removeLayer("nhc-x-text");
+    if (map.getSource("nhc-track-line")) map.removeSource("nhc-track-line");
+    if (map.getSource("nhc-track-pts")) map.removeSource("nhc-track-pts");
+    if (map.getSource("nhc-disturbances")) map.removeSource("nhc-disturbances");
+}
+
+document.getElementById("loadHurricaneBtn").addEventListener("click", loadNHCTracks);
+document.getElementById("clearHurricaneBtn").addEventListener("click", clearNHC);
 
 function openPopup(lngLat, contentHtml) {
     if (currentPopup) currentPopup.remove();
-
     currentPopup = new mapboxgl.Popup({ closeOnClick: true })
         .setLngLat(lngLat)
         .setHTML(`<div style="font-size: 13px; line-height: 1.45;">${contentHtml}</div>`)
@@ -417,77 +583,46 @@ function openPopup(lngLat, contentHtml) {
 async function loadSPC(day){
     try{
         clearSPC();
-
         const response = await fetch(SPC_URLS[day]);
         const geojson = await response.json();
 
-        map.addSource("spc",{
-            type:"geojson",
-            data:geojson
-        });
+        map.addSource("spc", { type: "geojson", data: geojson });
 
-        // Determine lookups based on standard categorical codes or numerical probabilities
         const fillExpression = (day === 'day1tornado') ? [
             "match", ["get", "LABEL"],
-            "0.02", "#008b00",
-            "0.05", "#8b4513",
-            "0.10", "#ffc0cb",
-            "0.15", "#ff0000",
-            "0.30", "#ff00ff",
-            "0.45", "#9400d3",
-            "0.60", "#1e90ff",
-            "#cccccc"
+            "0.02", "#008b00", "0.05", "#8b4513", "0.10", "#ffc0cb", "0.15", "#ff0000", "0.30", "#ff00ff", "0.45", "#9400d3", "0.60", "#1e90ff", "#cccccc"
         ] : [
             "match", ["get", "LABEL"],
-            "TSTM", "#55ff55",
-            "MRGL", "#00aaff",
-            "SLGT", "#ffff00",
-            "ENH",  "#ff9900",
-            "MDT",  "#ff0000",
-            "HIGH", "#ff00ff",
-            "#cccccc"
+            "TSTM", "#55ff55", "MRGL", "#00aaff", "SLGT", "#ffff00", "ENH",  "#ff9900", "MDT",  "#ff0000", "HIGH", "#ff00ff", "#cccccc"
         ];
 
         const lineExpression = (day === 'day1tornado') ? [
             "match", ["get", "LABEL"],
-            "0.02", "#008b00",
-            "0.05", "#8b4513",
-            "0.10", "#ffc0cb",
-            "0.15", "#ff0000",
-            "0.30", "#ff00ff",
-            "0.45", "#9400d3",
-            "0.60", "#1e90ff",
-            "#ffffff"
+            "0.02", "#008b00", "0.05", "#8b4513", "0.10", "#ffc0cb", "0.15", "#ff0000", "0.30", "#ff00ff", "0.45", "#9400d3", "0.60", "#1e90ff", "#ffffff"
         ] : [
             "match", ["get", "LABEL"],
-            "TSTM", "#55ff55",
-            "MRGL", "#00aaff",
-            "SLGT", "#ffff00",
-            "ENH",  "#ff9900",
-            "MDT",  "#ff0000",
-            "HIGH", "#ff00ff",
-            "#ffffff"
+            "TSTM", "#55ff55", "MRGL", "#00aaff", "SLGT", "#ffff00", "ENH",  "#ff9900", "MDT",  "#ff0000", "HIGH", "#ff00ff", "#ffffff"
         ];
 
-        map.addLayer({
-            id:"spc-fill",
-            type:"fill",
-            source:"spc",
-            paint:{
-                "fill-color": fillExpression,
-                "fill-opacity": day === 'day1tornado' ? 0.40 : 0.25
-            }
-        });
+        const layers = map.getStyle().layers;
+        let firstLabelId;
+        for (const layer of layers) {
+            if (layer.type === 'symbol') { firstLabelId = layer.id; break; }
+        }
 
         map.addLayer({
-            id:"spc-line",
-            type:"line",
-            source:"spc",
-            paint:{
-                "line-color": lineExpression,
-                "line-width": 3
-            }
-        });
+            id: "spc-fill",
+            type: "fill",
+            source: "spc",
+            paint: { "fill-color": fillExpression, "fill-opacity": day === 'day1tornado' ? 0.40 : 0.25 }
+        }, firstLabelId);
+
+        map.addLayer({
+            id: "spc-line",
+            type: "line",
+            source: "spc",
+            paint: { "line-color": lineExpression, "line-width": 3 }
+        }, firstLabelId);
 
     }catch(err){
         console.error(err);
@@ -496,10 +631,7 @@ async function loadSPC(day){
 }
 
 function clearSPC(){
-    if (currentPopup) {
-        currentPopup.remove();
-        currentPopup = null;
-    }
+    if (currentPopup) { currentPopup.remove(); currentPopup = null; }
     if(map.getLayer("spc-fill")) map.removeLayer("spc-fill");
     if(map.getLayer("spc-line")) map.removeLayer("spc-line");
     if(map.getSource("spc")) map.removeSource("spc");
@@ -511,38 +643,29 @@ document.getElementById("day2Btn").addEventListener("click",()=>loadSPC("day2"))
 document.getElementById("day3Btn").addEventListener("click",()=>loadSPC("day3"));
 document.getElementById("clearBtn").addEventListener("click",clearSPC);
 
-// US Radar Slider Controls
 const slider = document.getElementById("opacitySlider");
 const opacityText = document.getElementById("opacityValue");
-
 slider.addEventListener("input",()=>{
     const opacity = slider.value / 100;
     opacityText.textContent = slider.value + "%";
-    if(map.getLayer("radar-layer")){
-        map.setPaintProperty("radar-layer", "raster-opacity", opacity);
-    }
+    if(map.getLayer("radar-layer")) map.setPaintProperty("radar-layer", "raster-opacity", opacity);
 });
 
-// Canada Alerts Slider Controls
 const canadaAlertsSlider = document.getElementById("canadaAlertsSlider");
 const canadaAlertsText = document.getElementById("canadaAlertsValue");
-
 canadaAlertsSlider.addEventListener("input",()=>{
     const opacity = canadaAlertsSlider.value / 100;
     canadaAlertsText.textContent = canadaAlertsSlider.value + "%";
-    if(map.getLayer("canada-alerts-layer")){
-        map.setPaintProperty("canada-alerts-layer", "raster-opacity", opacity);
-    }
+    if(map.getLayer("canada-alerts-layer")) map.setPaintProperty("canada-alerts-layer", "fill-opacity", opacity);
+    if(map.getLayer("canada-alerts-outline")) map.setPaintProperty("canada-alerts-outline", "line-opacity", opacity);
 });
 
 function updateClock(){
     const now = new Date();
     document.getElementById("timeLabel").innerText = now.toLocaleString();
 }
-
 updateClock();
 setInterval(updateClock,1000);
-
 </script>
 
 </body>
