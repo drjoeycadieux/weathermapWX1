@@ -3,188 +3,92 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>Severe Storms Media - Dashboard</title>
-
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.5.0/mapbox-gl.css" rel="stylesheet">
-
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
+*{ margin:0; padding:0; box-sizing:border-box; }
 
 html,body{
-    width:100%;
-    height:100%;
-    overflow:hidden;
+    width:100%; height:100%; overflow:hidden;
     font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;
     background:#0f172a;
 }
 
-#map{
-    position:absolute;
-    inset:0;
-}
+#map{ position:absolute; inset:0; }
 
 .header{
-    position:absolute;
-    top:12px;
-    left:12px;
-    right:12px;
-    height:60px;
-    z-index:1000;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+    position:absolute; top:12px; left:12px; right:12px; height:60px;
+    z-index:1000; display:flex; justify-content:space-between; align-items:center;
     padding:0 20px;
-    background:rgba(8,12,20,.92);
-    backdrop-filter:blur(12px);
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:14px;
-    color:white;
+    background:rgba(8,12,20,.92); backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,.08); border-radius:14px; color:white;
 }
 
-.logo{
-    font-size:22px;
-    font-weight:700;
-}
-
-.subtitle{
-    font-size:12px;
-    color:#7dd3fc;
-}
+.logo{ font-size:22px; font-weight:700; }
+.subtitle{ font-size:12px; color:#7dd3fc; }
 
 .sidebar{
-    position:absolute;
-    top:90px;
-    left:12px;
-    width:300px;
-    max-height: calc(100vh - 120px);
-    overflow-y: auto;
+    position:absolute; top:90px; left:12px; width:300px;
+    max-height:calc(100vh - 120px); overflow-y:auto;
     z-index:1000;
-    background:rgba(8,12,20,.92);
-    backdrop-filter:blur(12px);
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:14px;
-    padding:18px;
-    color:white;
+    background:rgba(8,12,20,.92); backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,.08); border-radius:14px;
+    padding:18px; color:white;
 }
+.sidebar::-webkit-scrollbar{ width:6px; }
+.sidebar::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.15); border-radius:10px; }
 
-.sidebar::-webkit-scrollbar {
-    width: 6px;
-}
-.sidebar::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.15);
-    border-radius: 10px;
-}
-
-.section{
-    margin-bottom:20px;
-}
+.section{ margin-bottom:20px; }
 
 .section-title{
-    font-size:14px;
-    margin-bottom:12px;
-    color:#38bdf8;
-    font-weight:600;
+    font-size:14px; margin-bottom:12px;
+    color:#38bdf8; font-weight:600;
 }
 
 button{
-    width:100%;
-    padding:10px;
-    margin-bottom:8px;
-    border:none;
-    border-radius:8px;
-    background:#1e293b;
-    color:white;
-    cursor:pointer;
-    transition:.2s;
+    width:100%; padding:10px; margin-bottom:8px;
+    border:none; border-radius:8px;
+    background:#1e293b; color:white;
+    cursor:pointer; transition:.2s;
 }
+button:hover{ background:#334155; }
 
-button:hover{
-    background:#334155;
-}
+input[type=range]{ width:100%; }
 
-input[type=range]{
-    width:100%;
-}
+label{ display:block; font-size:12px; margin-bottom:4px; color:#94a3b8; }
 
 .status{
-    position:absolute;
-    bottom:15px;
-    right:15px;
-    z-index:1000;
-    background:rgba(0,0,0,.65);
-    color:white;
-    padding:10px 14px;
-    border-radius:10px;
-    font-size:12px;
+    position:absolute; bottom:15px; right:15px; z-index:1000;
+    background:rgba(0,0,0,.65); color:white;
+    padding:10px 14px; border-radius:10px; font-size:12px;
 }
 
-.legend{
-    margin-top:10px;
-    display:grid;
-    gap:6px;
-}
+.legend{ margin-top:10px; display:grid; gap:6px; }
+.legend-item{ display:flex; align-items:center; gap:8px; font-size:12px; }
+.color-box{ width:16px; height:16px; border-radius:3px; }
 
-.legend-item{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    font-size:12px;
+/* ── Popup overrides ── */
+.mapboxgl-popup-content{
+    background:rgba(15,23,42,0.96) !important;
+    color:#f8fafc !important;
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:10px; padding:14px !important;
+    box-shadow:0 10px 25px -5px rgba(0,0,0,0.6);
+    max-width:320px;
 }
+.mapboxgl-popup-anchor-top    .mapboxgl-popup-tip{ border-bottom-color:rgba(15,23,42,0.96) !important; }
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip{ border-top-color:rgba(15,23,42,0.96) !important; }
+.mapboxgl-popup-anchor-left   .mapboxgl-popup-tip{ border-right-color:rgba(15,23,42,0.96) !important; }
+.mapboxgl-popup-anchor-right  .mapboxgl-popup-tip{ border-left-color:rgba(15,23,42,0.96) !important; }
+.mapboxgl-popup-close-button{ color:#94a3b8 !important; padding:4px 8px !important; font-size:14px; }
+.mapboxgl-popup-close-button:hover{ background:transparent !important; color:#fff !important; }
 
-.color-box{
-    width:16px;
-    height:16px;
-    border-radius:3px;
+.alert-body{
+    margin-top:8px; max-height:160px; overflow-y:auto;
+    color:#cbd5e1; font-size:12px; line-height:1.55; padding-right:4px;
 }
-
-/* Custom styled popup elements */
-.mapboxgl-popup-content {
-    background: rgba(15, 23, 42, 0.96) !important;
-    color: #f8fafc !important;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 10px;
-    padding: 14px !important;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
-    max-width: 310px;
-}
-.mapboxgl-popup-anchor-top .mapboxgl-popup-tip { border-bottom-color: rgba(15, 23, 42, 0.96) !important; }
-.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip { border-top-color: rgba(15, 23, 42, 0.96) !important; }
-.mapboxgl-popup-anchor-left .mapboxgl-popup-tip { border-right-color: rgba(15, 23, 42, 0.96) !important; }
-.mapboxgl-popup-anchor-right .mapboxgl-popup-tip { border-left-color: rgba(15, 23, 42, 0.96) !important; }
-.mapboxgl-popup-close-button {
-    color: #94a3b8 !important;
-    padding: 4px 8px !important;
-    font-size: 14px;
-}
-.mapboxgl-popup-close-button:hover {
-    background: transparent !important;
-    color: #fff !important;
-}
-
-/* Scrollable alert text inside popup */
-.alert-body {
-    margin-top: 8px;
-    max-height: 160px;
-    overflow-y: auto;
-    color: #cbd5e1;
-    font-size: 12px;
-    line-height: 1.55;
-    padding-right: 4px;
-}
-.alert-body::-webkit-scrollbar { width: 4px; }
-.alert-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-
-label {
-    display: block;
-    font-size: 12px;
-    margin-bottom: 4px;
-    color: #94a3b8;
-}
+.alert-body::-webkit-scrollbar{ width:4px; }
+.alert-body::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.2); border-radius:4px; }
 </style>
 </head>
 <body>
@@ -194,17 +98,16 @@ label {
 <div class="header">
     <div>
         <div class="logo">Severe Storms Media - Dashboard</div>
-        <div class="subtitle">
-            Mapbox + NEXRAD + GOES LWIR + NHC Hurricanes + SPC Outlooks + ECCC Alerts
-        </div>
+        <div class="subtitle">Mapbox + NEXRAD + GOES LWIR + NHC Hurricanes + SPC Outlooks + NWS + ECCC Alerts</div>
     </div>
     <div id="timeLabel"></div>
 </div>
 
 <div class="sidebar">
+
     <div class="section">
         <div class="section-title">US Radar Controls (IEM)</div>
-        <button id="radarToggleBtn" style="background:#0f2d1a; border:1px solid #22c55e; color:#86efac;">✅ Radar ON</button>
+        <button id="radarToggleBtn" style="background:#0f2d1a;border:1px solid #22c55e;color:#86efac;">✅ Radar ON</button>
         <label style="margin-top:8px;">Radar Opacity</label>
         <input type="range" id="opacitySlider" min="0" max="100" value="75">
         <div id="opacityValue">75%</div>
@@ -212,22 +115,35 @@ label {
 
     <div class="section">
         <div class="section-title">🛰️ GOES-East Clean LWIR (Ch13)</div>
-        <button id="lwirToggleBtn" style="background:#0f2d40; border:1px solid #0ea5e9;">Enable Satellite IR</button>
+        <button id="lwirToggleBtn" style="background:#0f2d40;border:1px solid #0ea5e9;">Enable Satellite IR</button>
         <label style="margin-top:8px;">IR Opacity</label>
         <input type="range" id="lwirOpacitySlider" min="0" max="100" value="80" disabled>
         <div id="lwirOpacityValue" style="color:#475569;">80%</div>
     </div>
 
     <div class="section">
-        <div class="section-title">⚡ SB CAPE/CINH (SPC Mesoanalysis)</div>
-        <button id="capeToggleBtn" style="background:#1c0a2e; border:1px solid #a855f7; color:#d8b4fe;">Enable SB CAPE/CINH</button>
+        <div class="section-title">⚡ SB CAPE/CINH (SPC via IEM)</div>
+        <button id="capeToggleBtn" style="background:#1c0a2e;border:1px solid #a855f7;color:#d8b4fe;">Enable SB CAPE/CINH</button>
         <label style="margin-top:8px;">CAPE Opacity</label>
         <input type="range" id="capeOpacitySlider" min="0" max="100" value="75" disabled>
         <div id="capeOpacityValue" style="color:#475569;">75%</div>
     </div>
 
     <div class="section">
-        <div class="section-title">Canada Weather Alerts (ECCC)</div>
+        <div class="section-title">🇺🇸 NWS Weather Alerts</div>
+        <label>NWS Alerts Opacity</label>
+        <input type="range" id="nwsAlertsSlider" min="0" max="100" value="35">
+        <div id="nwsAlertsValue">35%</div>
+        <div class="legend" style="margin-top:10px;">
+            <div class="legend-item"><div class="color-box" style="background:#ff0000"></div>Extreme</div>
+            <div class="legend-item"><div class="color-box" style="background:#ff6600"></div>Severe</div>
+            <div class="legend-item"><div class="color-box" style="background:#ffff00"></div>Moderate</div>
+            <div class="legend-item"><div class="color-box" style="background:#00aaff"></div>Minor</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">🇨🇦 Canada Weather Alerts (ECCC)</div>
         <label>Alerts Opacity</label>
         <input type="range" id="canadaAlertsSlider" min="0" max="100" value="60">
         <div id="canadaAlertsValue">60%</div>
@@ -235,14 +151,14 @@ label {
 
     <div class="section">
         <div class="section-title">NHC Hurricane Tracking</div>
-        <button id="loadHurricaneBtn" style="background: #0369a1; border: 1px solid #38bdf8;">🌀 Load Active Cyclone Tracks</button>
+        <button id="loadHurricaneBtn" style="background:#0369a1;border:1px solid #38bdf8;">🌀 Load Active Cyclone Tracks</button>
         <button id="clearHurricaneBtn">Clear Hurricane Data</button>
     </div>
 
     <div class="section">
         <div class="section-title">SPC Outlooks</div>
         <button id="day1Btn">Load Day 1 Outlook</button>
-        <button id="day1TornadoBtn" style="background: #2e1065; border: 1px solid #6b21a8;">⚡ Load Day 1 Tornado Risk</button>
+        <button id="day1TornadoBtn" style="background:#2e1065;border:1px solid #6b21a8;">⚡ Load Day 1 Tornado Risk</button>
         <button id="day2Btn">Load Day 2 Outlook</button>
         <button id="day3Btn">Load Day 3 Outlook</button>
         <button id="clearBtn">Clear Outlook</button>
@@ -257,26 +173,18 @@ label {
             <div class="legend-item"><div class="color-box" style="background:#475569"></div>Grey (Special Statement)</div>
         </div>
     </div>
+
 </div>
 
-<div class="status">
-    Severe Storms Media - Transnational Hazard Tracking
-</div>
+<div class="status">Severe Storms Media - Transnational Hazard Tracking</div>
 
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.5.0/mapbox-gl.js"></script>
-
 <script>
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════════════════════
 mapboxgl.accessToken = "pk.eyJ1Ijoiam9leWNyZWF0b3IiLCJhIjoiY21xZWNmcjA1MWFrZDJ5cG93cG8wc3NvcCJ9.Ky4Z1kNOF5MKuYh7AbbodQ";
-
-const map = new mapboxgl.Map({
-    container: "map",
-    style: "mapbox://styles/mapbox/satellite-streets-v12",
-    center: [-80.0, 35.0],
-    zoom: 4.0,
-    antialias: true
-});
-
-map.addControl(new mapboxgl.NavigationControl(), "top-right");
 
 const SPC_URLS = {
     day1:        "https://www.spc.noaa.gov/products/outlook/day1otlk_cat.nolyr.geojson",
@@ -291,7 +199,7 @@ const OUTLOOK_DESCRIPTIONS = {
     "SLGT": "<strong style='color:#eab308;'>Slight Risk (Level 2)</strong><br>Scattered severe storms are possible.",
     "ENH":  "<strong style='color:#f97316;'>Enhanced Risk (Level 3)</strong><br>Numerous severe storms are possible.",
     "MDT":  "<strong style='color:#ef4444;'>Moderate Risk (Level 4)</strong><br>Widespread severe storms are likely.",
-    "HIGH": "<strong style='color:#ec4899;'>High Risk (Level 5)</strong><br>Widespread, dangerous severe storm outbreaks expected.",
+    "HIGH": "<strong style='color:#ec4899;'>High Risk (Level 5)</strong><br>Widespread dangerous severe storm outbreaks expected.",
     "0.02": "<strong style='color:#008b00;'>2% Tornado Probability</strong><br>Low risk within 25 miles of a point.",
     "0.05": "<strong style='color:#8b4513;'>5% Tornado Probability</strong><br>Slight risk setup within 25 miles of a point.",
     "0.10": "<strong style='color:#ffc0cb;'>10% Tornado Probability</strong><br>Elevated risk for tornadic development.",
@@ -301,135 +209,241 @@ const OUTLOOK_DESCRIPTIONS = {
     "0.60": "<strong style='color:#1e90ff;'>60% Tornado Probability</strong><br>Maximized catastrophic tornado risk footprint."
 };
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// MAP INIT
+// ═══════════════════════════════════════════════════════════════════════════════
+const map = new mapboxgl.Map({
+    container: "map",
+    style: "mapbox://sprites/mapbox/dark-v11",
+    center: [-90.0, 38.0],
+    zoom: 4.0,
+    antialias: true
+});
+
 let currentPopup = null;
 
-// ── Helper: find the first symbol layer id (used for layer ordering) ──────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function getFirstLabelLayer() {
     const layers = map.getStyle().layers;
     for (const layer of layers) {
-        if (layer.type === 'symbol') return layer.id;
+        if (layer.type === "symbol") return layer.id;
     }
     return undefined;
 }
 
-// ── Helper: open/replace a popup ─────────────────────────────────────────────
-function openPopup(lngLat, contentHtml) {
+function openPopup(lngLat, html) {
     if (currentPopup) currentPopup.remove();
-    currentPopup = new mapboxgl.Popup({ closeOnClick: true, maxWidth: '320px' })
+    currentPopup = new mapboxgl.Popup({ closeOnClick: true, maxWidth: "320px" })
         .setLngLat(lngLat)
-        .setHTML(`<div style="font-size:13px; line-height:1.45;">${contentHtml}</div>`)
+        .setHTML(`<div style="font-size:13px;line-height:1.45;">${html}</div>`)
         .addTo(map);
 }
 
+function buildPropsFallback(props) {
+    const skip = new Set(["geometry", "bbox"]);
+    let rows = '<em style="color:#94a3b8;font-size:11px;">No description field found. Raw properties:</em><br><br>';
+    for (const [k, v] of Object.entries(props)) {
+        if (skip.has(k) || v === null || v === "") continue;
+        rows += `<span style="color:#7dd3fc;">${k}:</span> ${String(v).substring(0, 200)}<br>`;
+    }
+    return rows;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
-// MAP LOAD — radar + ECCC alerts
+// MAP LOAD — all layers added here so firstLabelId is always in scope
 // ═══════════════════════════════════════════════════════════════════════════════
 map.on("load", async () => {
+
     const firstLabelId = getFirstLabelLayer();
 
-    // ── 1. US NEXRAD Radar ────────────────────────────────────────────────────
+    // ── 1. US NEXRAD Radar (IEM) ──────────────────────────────────────────────
     map.addSource("radar", {
         type: "raster",
         tiles: ["https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913/{z}/{x}/{y}.png"],
         tileSize: 256
     });
     map.addLayer({
-        id: "radar-layer",
-        type: "raster",
-        source: "radar",
+        id: "radar-layer", type: "raster", source: "radar",
         paint: { "raster-opacity": 0.75 }
     }, firstLabelId);
 
-    // ── 2. GOES-East Clean LWIR (Channel 13) via IEM WMS ─────────────────────
-    // IEM serves all 16 GOES-East channels via goes_east.cgi.
-    // Layer name pattern: {sector}_ch{channel} — CONUS Ch13 = "conus_ch13"
-    // We wrap it as a raster tile source using WMS GetMap with EPSG:3857.
-    const lwirWMS = "https://mesonet.agron.iastate.edu/cgi-bin/wms/goes_east.cgi?";
+    // ── 2. GOES-East Clean LWIR Ch13 (IEM WMS) ───────────────────────────────
+    const lwirWMS    = "https://mesonet.agron.iastate.edu/cgi-bin/wms/goes_east.cgi?";
     const lwirParams = new URLSearchParams({
-        SERVICE:     "WMS",
-        VERSION:     "1.1.1",
-        REQUEST:     "GetMap",
-        FORMAT:      "image/png",
-        TRANSPARENT: "true",
-        LAYERS:      "conus_ch13",
-        SRS:         "EPSG:3857",
-        WIDTH:       "256",
-        HEIGHT:      "256",
+        SERVICE:"WMS", VERSION:"1.1.1", REQUEST:"GetMap",
+        FORMAT:"image/png", TRANSPARENT:"true", LAYERS:"conus_ch13",
+        SRS:"EPSG:3857", WIDTH:"256", HEIGHT:"256"
     });
-
     map.addSource("lwir-satellite", {
         type: "raster",
-        tiles: [
-            // Mapbox passes {bbox-epsg-3857} for the bounding box of each tile
-            `${lwirWMS}${lwirParams.toString()}&BBOX={bbox-epsg-3857}`
-        ],
+        tiles: [`${lwirWMS}${lwirParams.toString()}&BBOX={bbox-epsg-3857}`],
         tileSize: 256,
         attribution: "GOES-East Ch13 © NOAA / IEM"
     });
-
     map.addLayer({
-        id: "lwir-layer",
-        type: "raster",
-        source: "lwir-satellite",
-        layout: { visibility: "none" },   // OFF by default — toggle button controls this
+        id: "lwir-layer", type: "raster", source: "lwir-satellite",
+        layout: { visibility: "none" },
         paint: { "raster-opacity": 0.80 }
-    }, "radar-layer");   // insert BELOW radar so radar stays on top
+    }, "radar-layer");
 
-    // ── 3. SPC Mesoanalysis — Surface-Based CAPE/CINH image overlay ───────────
-    // SPC publishes a live GIF of the national SBCAPE/CINH mesoanalysis.
-    // The image covers the CONUS with well-known geographic bounds.
-    // We add it as a Mapbox "image" source so it geo-registers on the map.
-    // CORS note: spc.noaa.gov sends CORS headers that allow embedding.
-    const CAPE_IMG_URL = "https://www.spc.noaa.gov/exper/mesoanalysis/s/sbcp/sbcp.gif";
+    // ── 3. SPC SB CAPE/CINH ───────────────────────────────────────────────────
+    // spc.noaa.gov blocks direct browser fetches (no CORS headers).
+    // We route the GIF through allorigins.win, a public CORS proxy,
+    // which re-serves it with Access-Control-Allow-Origin: *.
+    // The response comes back as a base64 data URL we feed straight into
+    // a Mapbox "image" source — no tiles needed, just geo-registered corners.
+    const SPC_CAPE_URL = "https://www.spc.noaa.gov/exper/mesoanalysis/s/sbcp/sbcp.gif";
+    const CAPE_PROXY   = `https://api.allorigins.win/raw?url=${encodeURIComponent(SPC_CAPE_URL)}`;
 
-    // Geographic corners of the SPC national (s) sector image [lng, lat]
-    // Top-left, top-right, bottom-right, bottom-left  (Mapbox image source order)
+    // Geographic corners of the SPC national sector [lng, lat]
+    // Order: top-left, top-right, bottom-right, bottom-left
     const CAPE_COORDS = [
-        [-134.0, 55.0],   // top-left
-        [ -55.0, 55.0],   // top-right
-        [ -55.0, 19.5],   // bottom-right
-        [-134.0, 19.5]    // bottom-left
+        [-134.0,  55.0],
+        [ -55.0,  55.0],
+        [ -55.0,  19.5],
+        [-134.0,  19.5]
     ];
 
-    map.addSource("sbcape-source", {
-        type: "image",
-        url:  CAPE_IMG_URL,
-        coordinates: CAPE_COORDS
-    });
-
-    map.addLayer({
-        id:     "sbcape-layer",
-        type:   "raster",
-        source: "sbcape-source",
-        layout: { visibility: "none" },
-        paint:  { "raster-opacity": 0.75 }
-    }, "radar-layer");   // below radar so radar stays on top
-
-    // ── 4. ECCC Live Weather Alerts ───────────────────────────────────────────
-    // FIX: fetch the data first, THEN add source + layers + click handlers
-    // so everything is guaranteed to exist before we attach interactivity.
     try {
-        const response = await fetch(
+        const capeResp  = await fetch(CAPE_PROXY);
+        const capeBlob  = await capeResp.blob();
+        const capeURL   = URL.createObjectURL(capeBlob);
+
+        map.addSource("sbcape-source", {
+            type: "image",
+            url:  capeURL,
+            coordinates: CAPE_COORDS
+        });
+        map.addLayer({
+            id:     "sbcape-layer",
+            type:   "raster",
+            source: "sbcape-source",
+            layout: { visibility: "none" },
+            paint:  { "raster-opacity": 0.75 }
+        }, "radar-layer");
+
+        console.log("SB CAPE/CINH loaded via CORS proxy.");
+    } catch (capeErr) {
+        console.warn("SB CAPE/CINH failed to load:", capeErr);
+    }
+
+    // ── 4. NWS Weather Alerts ─────────────────────────────────────────────────
+    // Placed INSIDE map.on("load") so firstLabelId is defined and the map is ready.
+    try {
+        const nwsResponse = await fetch(
+            "https://api.weather.gov/alerts/active?message_type=alert&status=actual"
+        );
+        const nwsData = await nwsResponse.json();
+        console.log("NWS Alerts loaded:", nwsData.features?.length || 0);
+
+        // NWS alerts sometimes have null geometry (zone-referenced).
+        // Filter those out so Mapbox doesn't throw a geometry error.
+        const nwsFiltered = {
+            type: "FeatureCollection",
+            features: (nwsData.features || []).filter(f => f.geometry !== null)
+        };
+
+        if (nwsFiltered.features.length > 0) {
+            map.addSource("nws-alerts", { type: "geojson", data: nwsFiltered });
+
+            map.addLayer({
+                id: "nws-alerts-layer", type: "fill", source: "nws-alerts",
+                paint: {
+                    "fill-color": [
+                        "match", ["get", "severity"],
+                        "Extreme",  "#ff0000",
+                        "Severe",   "#ff6600",
+                        "Moderate", "#ffff00",
+                        "Minor",    "#00aaff",
+                        "#888888"
+                    ],
+                    "fill-opacity": 0.35
+                }
+            }, firstLabelId);
+
+            map.addLayer({
+                id: "nws-alerts-outline", type: "line", source: "nws-alerts",
+                paint: {
+                    "line-color": [
+                        "match", ["get", "severity"],
+                        "Extreme",  "#ff4444",
+                        "Severe",   "#ff8844",
+                        "Moderate", "#ffff66",
+                        "Minor",    "#44ccff",
+                        "#aaaaaa"
+                    ],
+                    "line-width": 1.5
+                }
+            }, firstLabelId);
+
+            map.on("click", "nws-alerts-layer", (e) => {
+                if (!e.features.length) return;
+                const p = e.features[0].properties;
+
+                const event       = p.event       || p.headline || "Weather Alert";
+                const severity    = p.severity    || "Unknown";
+                const certainty   = p.certainty   || "Unknown";
+                const urgency     = p.urgency     || "Unknown";
+                const areaDesc    = p.areaDesc    || "";
+                const description = p.description || p.headline || "No description available.";
+
+                const severityColors = {
+                    "Extreme":  "#f87171",
+                    "Severe":   "#fb923c",
+                    "Moderate": "#fef08a",
+                    "Minor":    "#7dd3fc"
+                };
+                const badgeColor = severityColors[severity] || "#94a3b8";
+
+                openPopup(e.lngLat, `
+                    <strong style="color:#38bdf8;font-size:14px;">NWS Weather Alert</strong><br>
+                    <span style="font-size:10px;text-transform:uppercase;background:#0f172a;
+                        padding:3px 8px;border-radius:4px;color:${badgeColor};font-weight:bold;
+                        border:1px solid ${badgeColor};display:inline-block;margin-top:4px;">
+                        ● ${severity}
+                    </span>
+                    <hr style="border:0;border-top:1px solid rgba(255,255,255,0.1);margin:8px 0;">
+                    <span style="font-weight:600;color:#ffffff;font-size:13px;line-height:1.35;">
+                        ${event}
+                    </span>
+                    <p style="margin:4px 0 2px 0;color:#94a3b8;font-size:11px;">
+                        🔔 Urgency: ${urgency} &nbsp;|&nbsp; Certainty: ${certainty}
+                    </p>
+                    <p style="margin:0 0 6px 0;color:#7dd3fc;font-size:11px;font-weight:500;">
+                        📍 ${areaDesc}
+                    </p>
+                    <div class="alert-body">${description.replace(/\n/g, "<br>")}</div>
+                `);
+            });
+
+            map.on("mouseenter", "nws-alerts-layer", () => { map.getCanvas().style.cursor = "pointer"; });
+            map.on("mouseleave", "nws-alerts-layer", () => { map.getCanvas().style.cursor = ""; });
+
+            console.log(`NWS: ${nwsFiltered.features.length} alerts with geometry rendered.`);
+        } else {
+            console.log("NWS: No alerts with polygon geometry found.");
+        }
+
+    } catch (err) {
+        console.error("NWS Alert Error:", err);
+    }
+
+    // ── 5. ECCC Canada Weather Alerts ────────────────────────────────────────
+    try {
+        const ecccResponse = await fetch(
             "https://geo.weather.gc.ca/geomet?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&typeNames=Current-Alerts&outputFormat=geojson"
         );
-        const alertsGeoJSON = await response.json();
+        const alertsGeoJSON = await ecccResponse.json();
 
-        // Debug: log all property keys from the first feature so we know
-        // exactly what field names ECCC uses in the live feed.
-        if (alertsGeoJSON.features && alertsGeoJSON.features.length > 0) {
+        if (alertsGeoJSON.features?.length > 0) {
             console.log("ECCC feature property keys:", Object.keys(alertsGeoJSON.features[0].properties));
             console.log("ECCC sample props:", alertsGeoJSON.features[0].properties);
         }
 
-        map.addSource("canada-alerts", {
-            type: "geojson",
-            data: alertsGeoJSON
-        });
+        map.addSource("canada-alerts", { type: "geojson", data: alertsGeoJSON });
 
         map.addLayer({
-            id: "canada-alerts-layer",
-            type: "fill",
-            source: "canada-alerts",
+            id: "canada-alerts-layer", type: "fill", source: "canada-alerts",
             paint: {
                 "fill-color": [
                     "match", ["downcase", ["coalesce", ["get", "risk_colour_en"], ""]],
@@ -444,9 +458,7 @@ map.on("load", async () => {
         }, firstLabelId);
 
         map.addLayer({
-            id: "canada-alerts-outline",
-            type: "line",
-            source: "canada-alerts",
+            id: "canada-alerts-outline", type: "line", source: "canada-alerts",
             paint: {
                 "line-color": [
                     "match", ["downcase", ["coalesce", ["get", "risk_colour_en"], ""]],
@@ -461,63 +473,45 @@ map.on("load", async () => {
             }
         }, firstLabelId);
 
-        // FIX: click handler is registered HERE, after both layer and source exist,
-        // not before the async fetch resolves.
         map.on("click", "canada-alerts-layer", (e) => {
             if (!e.features.length) return;
             const p = e.features[0].properties;
 
-            // ECCC field names can vary — try every known variant
             const alertTitle  = p.alert_name_en  || p.alert_name  || p.title_en || p.title || "Active Hazard Alert";
             const alertRegion = p.feature_name_en || p.region_name_en || p.region || p.name_en || p.name || "Affected Grid Zone";
             const rawColor    = (p.risk_colour_en || p.colour || "").toLowerCase();
 
-            // ── FIX: try every known field name for the alert description text ──
-            // ECCC has used all of these across different API versions:
-            //   alert_text_en, description_en, headline_en, abstract_en,
-            //   event_desc_en, meteo_en, text_en, alert_desc
             const rawText =
-                p.alert_text_en   ||
-                p.description_en  ||
-                p.headline_en     ||
-                p.abstract_en     ||
-                p.event_desc_en   ||
-                p.meteo_en        ||
-                p.text_en         ||
-                p.alert_desc      ||
-                null;
+                p.alert_text_en  || p.description_en || p.headline_en ||
+                p.abstract_en    || p.event_desc_en  || p.meteo_en    ||
+                p.text_en        || p.alert_desc      || null;
 
-            // Fallback: if still nothing, show all props as a debug table
-            // so you can find the correct field name in your live data.
             const displayText = rawText
                 ? rawText.replace(/\n/g, "<br>")
                 : buildPropsFallback(p);
 
-            // Badge colour
             let badgeHex = "#94a3b8", displayColor = "Notice";
             if (rawColor === "red")    { badgeHex = "#f87171"; displayColor = "Red"; }
             if (rawColor === "orange") { badgeHex = "#fb923c"; displayColor = "Orange"; }
             if (rawColor === "yellow") { badgeHex = "#fef08a"; displayColor = "Yellow"; }
             if (rawColor === "grey")   { badgeHex = "#94a3b8"; displayColor = "Grey"; }
 
-            const html = `
-                <strong style="color:#38bdf8; font-size:14px;">ECCC Impact Alert</strong><br>
-                <span style="font-size:10px; text-transform:uppercase; background:#0f172a;
-                    padding:3px 8px; border-radius:4px; color:${badgeHex}; font-weight:bold;
-                    border:1px solid ${badgeHex}; display:inline-block; margin-top:4px;">
+            openPopup(e.lngLat, `
+                <strong style="color:#38bdf8;font-size:14px;">ECCC Impact Alert</strong><br>
+                <span style="font-size:10px;text-transform:uppercase;background:#0f172a;
+                    padding:3px 8px;border-radius:4px;color:${badgeHex};font-weight:bold;
+                    border:1px solid ${badgeHex};display:inline-block;margin-top:4px;">
                     ● ${displayColor} Level Risk
                 </span>
-                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:8px 0;">
-                <span style="font-weight:600; color:#ffffff; font-size:13px; line-height:1.35;">
+                <hr style="border:0;border-top:1px solid rgba(255,255,255,0.1);margin:8px 0;">
+                <span style="font-weight:600;color:#ffffff;font-size:13px;line-height:1.35;">
                     ${alertTitle}
                 </span>
-                <p style="margin:4px 0 6px 0; color:#7dd3fc; font-size:11px; font-weight:500;">
+                <p style="margin:4px 0 6px 0;color:#7dd3fc;font-size:11px;font-weight:500;">
                     📍 Zone: ${alertRegion}
                 </p>
                 <div class="alert-body">${displayText}</div>
-            `;
-
-            openPopup(e.lngLat, html);
+            `);
         });
 
         map.on("mouseenter", "canada-alerts-layer", () => { map.getCanvas().style.cursor = "pointer"; });
@@ -527,8 +521,7 @@ map.on("load", async () => {
         console.error("Error loading ECCC alert data:", err);
     }
 
-    // ── SPC hover/click (registered once here; layer may not exist yet — ──────
-    // ── Mapbox silently ignores clicks on non-existent layers, which is fine) ─
+    // ── SPC click handler (layer may not exist yet — Mapbox ignores safely) ───
     map.on("click", "spc-fill", (e) => {
         if (!e.features.length) return;
         const label = e.features[0].properties.LABEL || String(e.features[0].properties.LABEL_NUM);
@@ -537,19 +530,8 @@ map.on("load", async () => {
     });
     map.on("mouseenter", "spc-fill", () => { map.getCanvas().style.cursor = "pointer"; });
     map.on("mouseleave", "spc-fill", () => { map.getCanvas().style.cursor = ""; });
-});
 
-// ── Fallback: render all feature properties as a readable table ───────────────
-// This lets you see exactly what ECCC sends when the text field is missing.
-function buildPropsFallback(props) {
-    const skip = new Set(["geometry", "bbox"]);
-    let rows = '<em style="color:#94a3b8; font-size:11px;">No description field found. Raw properties:</em><br><br>';
-    for (const [k, v] of Object.entries(props)) {
-        if (skip.has(k) || v === null || v === "") continue;
-        rows += `<span style="color:#7dd3fc;">${k}:</span> ${String(v).substring(0, 200)}<br>`;
-    }
-    return rows;
-}
+}); // end map.on("load")
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // NHC HURRICANE MODULE
@@ -558,29 +540,24 @@ async function loadNHCTracks() {
     try {
         clearNHC();
 
-        const urlDisturbances = "https://mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer/0/query?where=1%3D1&outFields=*&f=geojson";
-        const urlAreasOfDev   = "https://mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer/1/query?where=1%3D1&outFields=*&f=geojson";
-        const urlTrackPoints  = "https://mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer/2/query?where=1%3D1&outFields=*&f=geojson";
-        const urlTrackLines   = "https://mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer/3/query?where=1%3D1&outFields=*&f=geojson";
-
         const [res0, res1, res2, res3] = await Promise.all([
-            fetch(urlDisturbances).then(r => r.json()),
-            fetch(urlAreasOfDev).then(r => r.json()),
-            fetch(urlTrackPoints).then(r => r.json()),
-            fetch(urlTrackLines).then(r => r.json())
+            fetch("https://mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer/0/query?where=1%3D1&outFields=*&f=geojson").then(r => r.json()),
+            fetch("https://mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer/1/query?where=1%3D1&outFields=*&f=geojson").then(r => r.json()),
+            fetch("https://mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer/2/query?where=1%3D1&outFields=*&f=geojson").then(r => r.json()),
+            fetch("https://mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer/3/query?where=1%3D1&outFields=*&f=geojson").then(r => r.json())
         ]);
 
-        console.log("NHC Layer 0 (Disturbances):", res0.features?.length || 0);
-        console.log("NHC Layer 1 (Areas of Dev):", res1.features?.length || 0);
-        console.log("NHC Layer 2 (Track Points):", res2.features?.length || 0);
-        console.log("NHC Layer 3 (Track Lines):",  res3.features?.length || 0);
+        console.log("NHC L0 Disturbances:", res0.features?.length || 0);
+        console.log("NHC L1 Areas of Dev:", res1.features?.length || 0);
+        console.log("NHC L2 Track Points:", res2.features?.length || 0);
+        console.log("NHC L3 Track Lines:",  res3.features?.length || 0);
 
         const firstLabelId = getFirstLabelLayer();
-        let dynamicBounds = new mapboxgl.LngLatBounds();
+        let dynamicBounds  = new mapboxgl.LngLatBounds();
         let coordinatesFound = false;
 
         // Track lines
-        if (res3.features && res3.features.length > 0) {
+        if (res3.features?.length > 0) {
             map.addSource("nhc-track-line", { type: "geojson", data: res3 });
             map.addLayer({
                 id: "nhc-line-layer", type: "line", source: "nhc-track-line",
@@ -594,7 +571,7 @@ async function loadNHCTracks() {
         }
 
         // Track points
-        if (res2.features && res2.features.length > 0) {
+        if (res2.features?.length > 0) {
             map.addSource("nhc-track-pts", { type: "geojson", data: res2 });
             map.addLayer({
                 id: "nhc-point-layer", type: "circle", source: "nhc-track-pts",
@@ -610,16 +587,18 @@ async function loadNHCTracks() {
                 const props = e.features[0].properties;
                 const mphValue = props.INTENSITY ? Math.round(props.INTENSITY * 1.15078) : "N/A";
                 openPopup(e.lngLat, `
-                    <strong style="color:#06b6d4; font-size:13px;">NHC Advisory Point</strong><br>
-                    <span style="font-weight:700; color:#fff; font-size:14px; display:inline-block; margin-top:4px;">🌀 Cyclone ${props.STORMANAME || 'Unnamed'}</span>
-                    <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:6px 0;">
-                    <p style="margin:2px 0; font-size:11px;"><b>Type:</b> ${props.DVLCMNT}</p>
-                    <p style="margin:2px 0; font-size:11px;"><b>Winds:</b> ${props.INTENSITY || 0} kts (${mphValue} mph)</p>
-                    <p style="margin:2px 0; font-size:11px;"><b>Target Horizon:</b> ${props.DATELBL || 'N/A'}</p>
+                    <strong style="color:#06b6d4;font-size:13px;">NHC Advisory Point</strong><br>
+                    <span style="font-weight:700;color:#fff;font-size:14px;display:inline-block;margin-top:4px;">
+                        🌀 Cyclone ${props.STORMANAME || "Unnamed"}
+                    </span>
+                    <hr style="border:0;border-top:1px solid rgba(255,255,255,0.1);margin:6px 0;">
+                    <p style="margin:2px 0;font-size:11px;"><b>Type:</b> ${props.DVLCMNT}</p>
+                    <p style="margin:2px 0;font-size:11px;"><b>Winds:</b> ${props.INTENSITY || 0} kts (${mphValue} mph)</p>
+                    <p style="margin:2px 0;font-size:11px;"><b>Target Horizon:</b> ${props.DATELBL || "N/A"}</p>
                 `);
             });
-            map.on("mouseenter", "nhc-point-layer", () => map.getCanvas().style.cursor = "pointer");
-            map.on("mouseleave", "nhc-point-layer", () => map.getCanvas().style.cursor = "");
+            map.on("mouseenter", "nhc-point-layer", () => { map.getCanvas().style.cursor = "pointer"; });
+            map.on("mouseleave", "nhc-point-layer", () => { map.getCanvas().style.cursor = ""; });
         }
 
         // Disturbances (layers 0 + 1 combined)
@@ -655,16 +634,18 @@ async function loadNHCTracks() {
                 if (!e.features.length) return;
                 const props = e.features[0].properties;
                 openPopup(e.lngLat, `
-                    <strong style="color:#f87171; font-size:13px;">NHC Tropical Update</strong><br>
-                    <span style="font-weight:700; color:#ffffff; font-size:14px; display:inline-block; margin-top:4px;">❌ Disturbance Active</span>
-                    <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:6px 0;">
-                    <p style="margin:2px 0; font-size:11px;"><b>2-Day Potential:</b> ${props.DIST2DAY || props.TWO_DAY_PO || 'N/A'}</p>
-                    <p style="margin:2px 0; font-size:11px;"><b>7-Day Potential:</b> ${props.DIST7DAY || props.SEVEN_DAY_P || 'N/A'}</p>
-                    <div class="alert-body" style="margin-top:6px;">${props.SUMMARY || 'System monitoring active. View nhc.noaa.gov for official advisory statements.'}</div>
+                    <strong style="color:#f87171;font-size:13px;">NHC Tropical Update</strong><br>
+                    <span style="font-weight:700;color:#ffffff;font-size:14px;display:inline-block;margin-top:4px;">
+                        ❌ Disturbance Active
+                    </span>
+                    <hr style="border:0;border-top:1px solid rgba(255,255,255,0.1);margin:6px 0;">
+                    <p style="margin:2px 0;font-size:11px;"><b>2-Day Potential:</b> ${props.DIST2DAY || props.TWO_DAY_PO || "N/A"}</p>
+                    <p style="margin:2px 0;font-size:11px;"><b>7-Day Potential:</b> ${props.DIST7DAY || props.SEVEN_DAY_P || "N/A"}</p>
+                    <div class="alert-body" style="margin-top:6px;">${props.SUMMARY || "System monitoring active. View nhc.noaa.gov for official advisory statements."}</div>
                 `);
             });
-            map.on("mouseenter", "nhc-x-layer", () => map.getCanvas().style.cursor = "pointer");
-            map.on("mouseleave", "nhc-x-layer", () => map.getCanvas().style.cursor = "");
+            map.on("mouseenter", "nhc-x-layer", () => { map.getCanvas().style.cursor = "pointer"; });
+            map.on("mouseleave", "nhc-x-layer", () => { map.getCanvas().style.cursor = ""; });
         }
 
         if (coordinatesFound) {
@@ -680,8 +661,12 @@ async function loadNHCTracks() {
 
 function clearNHC() {
     if (currentPopup) { currentPopup.remove(); currentPopup = null; }
-    ["nhc-line-layer","nhc-point-layer","nhc-x-layer","nhc-x-text"].forEach(id => { if (map.getLayer(id)) map.removeLayer(id); });
-    ["nhc-track-line","nhc-track-pts","nhc-disturbances"].forEach(id => { if (map.getSource(id)) map.removeSource(id); });
+    ["nhc-line-layer","nhc-point-layer","nhc-x-layer","nhc-x-text"].forEach(id => {
+        if (map.getLayer(id)) map.removeLayer(id);
+    });
+    ["nhc-track-line","nhc-track-pts","nhc-disturbances"].forEach(id => {
+        if (map.getSource(id)) map.removeSource(id);
+    });
 }
 
 document.getElementById("loadHurricaneBtn").addEventListener("click", loadNHCTracks);
@@ -698,7 +683,7 @@ async function loadSPC(day) {
 
         map.addSource("spc", { type: "geojson", data: geojson });
 
-        const isTornado = day === 'day1tornado';
+        const isTornado = day === "day1tornado";
 
         const fillExpression = isTornado ? [
             "match", ["get", "LABEL"],
@@ -742,11 +727,11 @@ function clearSPC() {
     if (map.getSource("spc")) map.removeSource("spc");
 }
 
-document.getElementById("day1Btn").addEventListener("click", () => loadSPC("day1"));
+document.getElementById("day1Btn").addEventListener("click",        () => loadSPC("day1"));
 document.getElementById("day1TornadoBtn").addEventListener("click", () => loadSPC("day1tornado"));
-document.getElementById("day2Btn").addEventListener("click", () => loadSPC("day2"));
-document.getElementById("day3Btn").addEventListener("click", () => loadSPC("day3"));
-document.getElementById("clearBtn").addEventListener("click", clearSPC);
+document.getElementById("day2Btn").addEventListener("click",        () => loadSPC("day2"));
+document.getElementById("day3Btn").addEventListener("click",        () => loadSPC("day3"));
+document.getElementById("clearBtn").addEventListener("click",       clearSPC);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SB CAPE/CINH TOGGLE
@@ -754,135 +739,124 @@ document.getElementById("clearBtn").addEventListener("click", clearSPC);
 let capeVisible = false;
 
 document.getElementById("capeToggleBtn").addEventListener("click", function () {
-    capeVisible = !capeVisible;
-    const vis = capeVisible ? "visible" : "none";
-
-    if (map.getLayer("sbcape-layer")) {
-        map.setLayoutProperty("sbcape-layer", "visibility", vis);
+    if (!map.getLayer("sbcape-layer")) {
+        alert("SB CAPE/CINH layer is still loading or failed to fetch from SPC. Please wait a moment and try again.");
+        return;
     }
-
+    capeVisible = !capeVisible;
+    map.setLayoutProperty("sbcape-layer", "visibility", capeVisible ? "visible" : "none");
     const slider = document.getElementById("capeOpacitySlider");
     const valEl  = document.getElementById("capeOpacityValue");
-    slider.disabled = !capeVisible;
+    slider.disabled  = !capeVisible;
     valEl.style.color = capeVisible ? "#e2e8f0" : "#475569";
-
-    if (capeVisible) {
-        this.textContent = "✅ SB CAPE/CINH ON";
-        this.style.background = "#2e1065";
-        this.style.border = "1px solid #a855f7";
-        this.style.color = "#d8b4fe";
-    } else {
-        this.textContent = "Enable SB CAPE/CINH";
-        this.style.background = "#1c0a2e";
-        this.style.border = "1px solid #a855f7";
-        this.style.color = "#d8b4fe";
-    }
+    this.textContent  = capeVisible ? "✅ SB CAPE/CINH ON" : "Enable SB CAPE/CINH";
 });
 
-const capeSlider = document.getElementById("capeOpacitySlider");
-const capeOpacityText = document.getElementById("capeOpacityValue");
-capeSlider.addEventListener("input", () => {
-    capeOpacityText.textContent = capeSlider.value + "%";
+document.getElementById("capeOpacitySlider").addEventListener("input", function () {
+    document.getElementById("capeOpacityValue").textContent = this.value + "%";
     if (map.getLayer("sbcape-layer")) {
-        map.setPaintProperty("sbcape-layer", "raster-opacity", capeSlider.value / 100);
+        map.setPaintProperty("sbcape-layer", "raster-opacity", this.value / 100);
     }
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// GOES-EAST CLEAN LWIR TOGGLE
+// GOES-EAST LWIR TOGGLE
 // ═══════════════════════════════════════════════════════════════════════════════
 let lwirVisible = false;
 
 document.getElementById("lwirToggleBtn").addEventListener("click", function () {
     lwirVisible = !lwirVisible;
-    const vis = lwirVisible ? "visible" : "none";
-
     if (map.getLayer("lwir-layer")) {
-        map.setLayoutProperty("lwir-layer", "visibility", vis);
+        map.setLayoutProperty("lwir-layer", "visibility", lwirVisible ? "visible" : "none");
     }
-
-    // Update button appearance
-    if (lwirVisible) {
-        this.textContent = "✅ Satellite IR ON";
-        this.style.background = "#0c4a6e";
-        this.style.border = "1px solid #38bdf8";
-        this.style.color = "#7dd3fc";
-    } else {
-        this.textContent = "Enable Satellite IR";
-        this.style.background = "#0f2d40";
-        this.style.border = "1px solid #0ea5e9";
-        this.style.color = "white";
-    }
-
-    // Enable/disable the opacity slider
     const slider = document.getElementById("lwirOpacitySlider");
     const valEl  = document.getElementById("lwirOpacityValue");
-    slider.disabled = !lwirVisible;
+    slider.disabled   = !lwirVisible;
     valEl.style.color = lwirVisible ? "#e2e8f0" : "#475569";
+    if (lwirVisible) {
+        this.textContent  = "✅ Satellite IR ON";
+        this.style.background = "#0c4a6e";
+        this.style.border     = "1px solid #38bdf8";
+        this.style.color      = "#7dd3fc";
+    } else {
+        this.textContent  = "Enable Satellite IR";
+        this.style.background = "#0f2d40";
+        this.style.border     = "1px solid #0ea5e9";
+        this.style.color      = "white";
+    }
 });
 
-const lwirSlider = document.getElementById("lwirOpacitySlider");
-const lwirOpacityText = document.getElementById("lwirOpacityValue");
-lwirSlider.addEventListener("input", () => {
-    lwirOpacityText.textContent = lwirSlider.value + "%";
+document.getElementById("lwirOpacitySlider").addEventListener("input", function () {
+    document.getElementById("lwirOpacityValue").textContent = this.value + "%";
     if (map.getLayer("lwir-layer")) {
-        map.setPaintProperty("lwir-layer", "raster-opacity", lwirSlider.value / 100);
+        map.setPaintProperty("lwir-layer", "raster-opacity", this.value / 100);
     }
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SLIDERS
+// RADAR TOGGLE + OPACITY
 // ═══════════════════════════════════════════════════════════════════════════════
 let radarVisible = true;
 
 document.getElementById("radarToggleBtn").addEventListener("click", function () {
     radarVisible = !radarVisible;
-    const vis = radarVisible ? "visible" : "none";
-    if (map.getLayer("radar-layer")) map.setLayoutProperty("radar-layer", "visibility", vis);
-
+    if (map.getLayer("radar-layer")) {
+        map.setLayoutProperty("radar-layer", "visibility", radarVisible ? "visible" : "none");
+    }
     const slider = document.getElementById("opacitySlider");
     const valEl  = document.getElementById("opacityValue");
-    slider.disabled = !radarVisible;
+    slider.disabled   = !radarVisible;
     valEl.style.color = radarVisible ? "#e2e8f0" : "#475569";
-
     if (radarVisible) {
-        this.textContent = "✅ Radar ON";
+        this.textContent      = "✅ Radar ON";
         this.style.background = "#0f2d1a";
-        this.style.border = "1px solid #22c55e";
-        this.style.color = "#86efac";
+        this.style.border     = "1px solid #22c55e";
+        this.style.color      = "#86efac";
     } else {
-        this.textContent = "Enable Radar";
+        this.textContent      = "Enable Radar";
         this.style.background = "#1e293b";
-        this.style.border = "1px solid #475569";
-        this.style.color = "white";
+        this.style.border     = "1px solid #475569";
+        this.style.color      = "white";
     }
 });
-const slider = document.getElementById("opacitySlider");
-const opacityText = document.getElementById("opacityValue");
-slider.addEventListener("input", () => {
-    opacityText.textContent = slider.value + "%";
-    if (map.getLayer("radar-layer")) map.setPaintProperty("radar-layer", "raster-opacity", slider.value / 100);
+
+document.getElementById("opacitySlider").addEventListener("input", function () {
+    document.getElementById("opacityValue").textContent = this.value + "%";
+    if (map.getLayer("radar-layer")) {
+        map.setPaintProperty("radar-layer", "raster-opacity", this.value / 100);
+    }
 });
 
-const canadaAlertsSlider = document.getElementById("canadaAlertsSlider");
-const canadaAlertsText   = document.getElementById("canadaAlertsValue");
-canadaAlertsSlider.addEventListener("input", () => {
-    const opacity = canadaAlertsSlider.value / 100;
-    canadaAlertsText.textContent = canadaAlertsSlider.value + "%";
-    if (map.getLayer("canada-alerts-layer"))  map.setPaintProperty("canada-alerts-layer",  "fill-opacity", opacity);
-    if (map.getLayer("canada-alerts-outline")) map.setPaintProperty("canada-alerts-outline","line-opacity", opacity);
+// ═══════════════════════════════════════════════════════════════════════════════
+// NWS ALERTS OPACITY SLIDER
+// ═══════════════════════════════════════════════════════════════════════════════
+document.getElementById("nwsAlertsSlider").addEventListener("input", function () {
+    const opacity = this.value / 100;
+    document.getElementById("nwsAlertsValue").textContent = this.value + "%";
+    if (map.getLayer("nws-alerts-layer"))   map.setPaintProperty("nws-alerts-layer",   "fill-opacity", opacity);
+    if (map.getLayer("nws-alerts-outline")) map.setPaintProperty("nws-alerts-outline",  "line-opacity", opacity);
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ECCC CANADA ALERTS OPACITY SLIDER
+// ═══════════════════════════════════════════════════════════════════════════════
+document.getElementById("canadaAlertsSlider").addEventListener("input", function () {
+    const opacity = this.value / 100;
+    document.getElementById("canadaAlertsValue").textContent = this.value + "%";
+    if (map.getLayer("canada-alerts-layer"))   map.setPaintProperty("canada-alerts-layer",   "fill-opacity",  opacity);
+    if (map.getLayer("canada-alerts-outline"))  map.setPaintProperty("canada-alerts-outline",  "line-opacity",  opacity);
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // UTC CLOCK
 // ═══════════════════════════════════════════════════════════════════════════════
 function updateClock() {
-    const now = new Date();
-    document.getElementById("timeLabel").innerText = now.toUTCString().replace(" GMT", " UTC");
+    document.getElementById("timeLabel").innerText =
+        new Date().toUTCString().replace(" GMT", " UTC");
 }
 updateClock();
 setInterval(updateClock, 1000);
-</script>
 
+</script>
 </body>
 </html>
