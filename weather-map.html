@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>GFS Weather Map</title>
+    <!-- Mapbox GL JS -->
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
+    <link href="https://api.tiles.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet" />
+    <!-- Deck.gl -->
+    <script src="https://unpkg.com/deck.gl@^9.0.0/dist.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="status" style="position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.7); color: white; padding: 12px; border-radius: 5px; font-size: 12px; z-index: 1000; max-width: 300px;">
+        <strong>GFS Weather Map</strong><br/>
+        <small id="status-text">Loading...</small>
+    </div>
+    <button id="demo-btn" style="position: absolute; top: 80px; left: 20px; padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 1000; font-size: 12px;">
+        Load Demo Data
+    </button>
+    <script>
+        const { MapboxOverlay, GridLayer } = deck;
+        
+        // Status display function
+        function updateStatus(message, isError = false) {
+            const statusText = document.getElementById('status-text');
+            statusText.textContent = message;
+            if (isError) {
+                statusText.parentElement.style.background = 'rgba(220,53,69,0.9)';
+            } else {
+                statusText.parentElement.style.background = 'rgba(0,0,0,0.7)';
+            }
+        }
+
+        // Initialize Mapbox
+        mapboxgl.accessToken = 'pk.eyJ1Ijoiam9leWNyZWF0b3IiLCJhIjoiY21xZWNmcjA1MWFrZDJ5cG93cG8wc3NvcCJ9.Ky4Z1kNOF5MKuYh7AbbodQ';
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/dark-v11',
+            center: [-73.56, 45.50], // Montreal
+            zoom: 5
+        });
+
+        let currentOverlay = null;
+
+        // Fetch data from backend API (no CORS issues)
+        async function loadWeatherData(useDemo = false) {
+            try {
+                updateStatus('Fetching weather data...');
+                
+                // Use demo endpoint if requested
+                const apiUrl = useDemo ? '/api/gfs-data-demo' : '/api/gfs-data?param=cape&range=24';
+                
+                console.log('Fetching from:', apiUrl);
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    let errorMsg = `HTTP error! status: ${response.status}`;
+                    try {
+                        const error = await response.json();
+                        errorMsg = error.message || error.details || errorMsg;
+                    } catch (e) {
+                        // Response wasn't JSON
+                    }
+                    throw new Error(errorMsg);
+                }
+                
+                const data = await response.json();
+                console.log('Weather data received:', data);
+                updateStatus('Data loaded successfully');
+
+                // Handle different data formats
+                let dataArray = data;
+                if (data.data && Array.isArray(data.data)) {
+                    dataArray = data.data;
+                } else if (!Array.isArray(data)) {
+                    dataArray = [data];
+                }
+
+                // Only add overlay if we have valid data
+                if (dataArray && dataArray.length > 0) {
+                    // Remove old overlay if it exists
+                    if (currentOverlay) {
+                        map.removeControl(currentOverlay);
+                    }
+
+                    currentOverlay = new MapboxOverlay({
+                        layers: [
+                            new GridLayer({
+                                id: 'gfs-cape-layer',
+                                data: dataArray,
+                                getPosition: d => [d.lon || d.longitude || 0, d.lat || d.latitude || 0],
+                                getColorValue: d => d.value || 0,
+                                getElevationValue: d => d.value || 0,
+                                cellSize: 20000, 
+                                extruded: true, 
+                                colorRange: [
+                                    [255, 255, 204],
+                                    [255, 237, 160],
+                                    [254, 217, 118],
+                                    [254, 178, 76],
+                                    [253, 141, 60],
+                                    [252, 78, 42],
+                                    [227, 26, 28]
+                                ]
+                            })
+                        ]
+                    });
+
+                    map.addControl(currentOverlay);
+                } else {
+                    throw new Error('No valid data received from API');
+                }
+            } catch (error) {
+                console.error('Data load error:', error);
+                updateStatus(`Error: ${error.message}`, true);
+            }
+        }
+
+        // Demo button handler
+        document.getElementById('demo-btn').addEventListener('click', () => {
+            loadWeatherData(true);
+        });
+
+        map.on('load', () => {
+            // Try to load real data on startup
+            loadWeatherData(false);
+        });
+    </script>
+</body>
+</html>
