@@ -1,190 +1,261 @@
-# GFS Weather Map - Setup & Usage
+# GFS Weather Map - NOAA Real-Time Weather Visualization
 
 ## Overview
-This project visualizes GFS weather data from gribstream API on an interactive Mapbox map without CORS issues.
+Interactive weather map using NOAA's free GFS (Global Forecast System) API. Displays real-time temperature, wind, and forecast data with **zero CORS issues** and **no API key required**.
 
 ## Current Status
-✅ **Server running** - CORS issues completely fixed
-✅ **Demo mode** - Test with sample data (works immediately)
-⚠️ **gribstream API** - Needs endpoint verification (see troubleshooting)
+✅ **Server running** - Express backend at `http://localhost:3000`  
+✅ **NOAA Integration** - Real weather data for USA locations  
+✅ **Demo Mode** - Always works, shows sample data  
+✅ **Location Selection** - 6 preset US cities + custom coordinates  
+✅ **CORS Fixed** - Backend handles all API calls securely  
 
-## Prerequisites
-- Node.js 14+ installed
-- A valid gribstream API key (optional - demo works without it)
+## Features
+- 🗺️ **Interactive Mapbox GL visualization**
+- 🌡️ **Real-time temperature data** (NOAA GFS for USA)
+- 📊 **Color-coded grid overlay** (blue=cold, red=hot)
+- 📍 **Location selector** with preset cities
+- 🔧 **Custom location support** (enter any lat/lon)
+- 📡 **Demo mode** for any location (always available)
+- 🚀 **No authentication required** (NOAA is free)
 
-## Installation
+## Quick Start
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-2. **Create `.env` file** (optional for demo mode):
-   ```bash
-   cp .env.example .env
-   ```
-   Edit `.env` and add your gribstream API key if you have one:
-   ```
-   GRIBSTREAM_API_KEY=your_actual_api_key_here
-   ```
-
-3. **Add your Mapbox token** to `weather-map.html`:
-   Find this line (around line 24):
-   ```javascript
-   mapboxgl.accessToken = 'pk.eyJ1Ijoiam9leWNyZWF0b3IiLCJhIjoiY21xZWNmcjA1MWFrZDJ5cG93cG8wc3NvcCJ9.Ky4Z1kNOF5MKuYh7AbbodQ';
-   ```
-   Replace `pk.eyJ...` with your actual Mapbox token.
-
-## Running the Server
-
+### Installation
 ```bash
+npm install
 npm start
 ```
 
-The server will start on `http://localhost:3000`
+Server will start at `http://localhost:3000`
 
-## Using the Application
+### Open in Browser
+- **Full URL**: http://localhost:3000/weather-map.html
+- Or just open your browser and navigate to `http://localhost:3000`
 
-### 1. **Demo Mode (Recommended to Start)**
-- Open http://localhost:3000
-- Click the **"Load Demo Data"** button
-- You'll see sample weather visualization on the map
-- This works without any API key and demonstrates the full functionality
+## How to Use
 
-### 2. **Real Data Mode (gribstream API)**
-- Once you have verified the demo works, configure your gribstream API
-- Update the `.env` file with a valid API key
-- Restart the server
-- The app will automatically try to load real weather data on startup
-- If successful, you'll see real GFS data on the map
+### 1. **Select a Location**
+- Choose from preset US cities (New York, Chicago, Atlanta, Seattle, Albuquerque)
+- Or select Montreal for demo mode
+- Or choose "Custom Location..." to enter any latitude/longitude
+
+### 2. **Load Real Weather**
+- Click **"📡 Load Real Weather"** for NOAA data (USA only)
+- Map will zoom to selected location
+- Real temperature forecast displays on map
+
+### 3. **Load Demo Data**
+- Click **"📊 Load Demo Data"** anytime
+- Works for any location (including outside USA)
+- Shows sample weather patterns
 
 ## Available Endpoints
 
-- **`GET /`** - Serves the weather map
-- **`GET /api/health`** - Health check endpoint
-- **`GET /api/gfs-data`** - Fetch GFS weather data from gribstream
-- **`GET /api/gfs-data-demo`** - Get demo data (always works)
-
-Query parameters for `/api/gfs-data`:
-- `param`: Weather parameter (default: `cape`) - cape, temp, wind_u, wind_v, etc.
-- `range`: Forecast range in hours (default: `24`)
-- `lat`, `lon`: Optional coordinates for specific location
-
-## How It Works
-
-### Architecture
 ```
-Frontend (HTML/JS)
-    ↓
-Backend (Express/Node.js) ← Handles API calls securely
-    ↓
-gribstream API (server-to-server, no CORS issues)
+GET /                           # Serves weather-map.html
+GET /weather-map.html           # Main weather visualization
+GET /api/health                 # Health check
+GET /api/gfs-data              # Real NOAA weather data
+  ?lat=40.71&lon=-74.01        # New York example
+GET /api/gfs-data-demo         # Sample weather data
 ```
 
-### No More CORS Errors!
-Instead of directly calling the gribstream API from the browser (which gets blocked), your backend server makes the API calls. This eliminates all CORS issues.
+## Data Sources
 
-## Available GFS Parameters
+### NOAA API (Real Data - USA Only)
+- **Coverage**: United States only (lat 25-48, lon -65 to -125)
+- **Data**: Temperature, wind direction, wind speed, forecasts
+- **Authentication**: None (public API)
+- **Cost**: Free
+- **Rate limit**: Reasonable for development
 
-Common parameters from gribstream:
-- `cape` - Convective Available Potential Energy
-- `cin` - Convective Inhibition  
-- `temp` - Temperature
-- `wind_u`, `wind_v` - Wind components
-- `precip` - Precipitation
-- `gust` - Wind gust
-- `vis` - Visibility
+### Demo Data (Everywhere)
+- **Coverage**: Works anywhere
+- **Data**: Sample CAPE-like values for visualization testing
+- **Perfect for**: Testing, development, non-US locations
 
-## UI Components
+## Location Examples
 
-- **Map Display** - Interactive Mapbox map showing weather data
-- **Status Panel** (top-left) - Shows current data status and errors
-- **Load Demo Data Button** (below status) - Click to load sample data
-- **Grid Visualization** - Color-coded grid overlay showing weather values
+### Working Locations (Real NOAA Data)
+- **New York**: 40.71°N, 74.01°W
+- **Chicago**: 41.88°N, 87.63°W
+- **Atlanta**: 33.75°N, 84.39°W
+- **Seattle**: 47.61°N, 122.33°W
+- **Albuquerque**: 35.09°N, 106.65°W
 
-## Error Handling
+### Demo-Only Locations
+- **Montreal**: 45.5°N, 73.5°W (outside NOAA coverage)
+- **Toronto**: 43.65°N, 79.38°W (outside NOAA coverage)
+- **Any custom non-US location**: Use demo mode
 
-The application includes:
-- ✅ Backend API validation
-- ✅ Frontend error display
-- ✅ Graceful fallback to demo mode
-- ✅ Detailed error messages
-- ✅ Server-side logging for debugging
+## Color Scale
 
-## Troubleshooting
-
-### Demo Mode Not Working
-- Check that server is running: `curl http://localhost:3000/api/health`
-- Check browser console (F12) for errors
-- Make sure you have a valid Mapbox token
-
-### gribstream API Returning 404
-The exact endpoint format might vary. Common issues:
-- ❌ API key is invalid → Get a valid key from gribstream
-- ❌ Endpoint URL format is wrong → Check gribstream API docs
-- ❌ API service is down → Check their status page
-
-**To find the correct endpoint:**
-1. Check gribstream official API documentation
-2. Use the demo mode in the meantime
-3. Update the endpoint URLs in `server.js` (lines around 30-32)
-
-### "GRIBSTREAM_API_KEY not configured"
-- Make sure `.env` file exists in the project root
-- Check that `GRIBSTREAM_API_KEY=your_key` is in the file
-- Restart the server after updating `.env`
-
-### Mapbox not displaying map
-- Verify your Mapbox token is valid
-- Make sure the token has the right permissions (public access)
-- Check browser console for Mapbox errors
-
-### Port 3000 already in use
-Change the PORT in `.env`:
+The visualization uses temperature-based coloring:
 ```
-PORT=3001
+🔵 Blue      → Cold (< 40°F)
+🟦 Light Blue → Cool (40-55°F)
+🟩 Green     → Mild (55-70°F)
+🟨 Yellow    → Warm (70-85°F)
+🟧 Orange    → Hot (85-100°F)
+🔴 Red       → Very Hot (> 100°F)
 ```
-Then run `npm start` again.
+
+## Architecture
+
+```
+Browser (weather-map.html)
+    ↓ (fetch requests)
+Express Backend (server.js)
+    ↓ (server-to-server)
+NOAA Weather.gov API
+    ↓ (real weather data)
+Display on Map
+```
+
+**No CORS issues** because:
+- Frontend only talks to backend (same origin)
+- Backend makes API calls (server-to-server, unrestricted)
+- NOAA API only checks User-Agent, not origin
 
 ## File Structure
 
 ```
-.
-├── server.js           # Express backend (handles API calls)
-├── weather-map.html    # Frontend visualization
-├── package.json        # Dependencies and scripts
-├── .env                # Configuration (API keys, port)
-├── .env.example        # Template for .env
-├── .gitignore          # Git ignore rules
-└── README.md           # This file
+/workspaces/weathermapWX1/
+├── server.js              # Express backend with NOAA integration
+├── weather-map.html       # Main visualization (interactive)
+├── index.html             # Alternative dashboard
+├── package.json           # Dependencies
+├── .env                   # Config (created on first run)
+├── .env.example           # Config template
+├── .gitignore             # Git ignore rules
+├── README.md              # This file
+└── /node_modules/         # Dependencies (auto-generated)
 ```
 
 ## Dependencies
 
-- **express** (^4.18.2) - Web server framework
+- **express** (^4.18.2) - Web server
 - **node-fetch** (^2.6.7) - HTTP requests for Node.js
-- **dotenv** (^16.0.3) - Environment variable management
+- **dotenv** (^16.0.3) - Environment variables
+
+## Configuration
+
+### .env File
+Located at project root (auto-created from .env.example):
+```bash
+PORT=3000                    # Server port
+NODE_ENV=development         # development or production
+GRIBSTREAM_API_KEY=unused    # Not needed for NOAA
+```
+
+Change port if 3000 is in use:
+```bash
+# .env
+PORT=3001
+```
+
+## API Response Examples
+
+### Real NOAA Data (USA)
+```json
+{
+  "model": "NOAA GFS",
+  "location": "40.71,-74.01",
+  "timestamp": "2026-06-28T23:00:20.952Z",
+  "unit": "Fahrenheit",
+  "data": [
+    {
+      "period": 0,
+      "name": "Tonight",
+      "temperature": 68,
+      "windSpeed": "1 to 8 mph",
+      "windDirection": "E",
+      "value": 68,
+      "lat": 40.71,
+      "lon": -74.01
+    }
+  ]
+}
+```
+
+### Demo Data
+```json
+{
+  "model": "GFS",
+  "parameter": "CAPE",
+  "units": "J/kg",
+  "timestamp": "2026-06-28T23:00:15.290Z",
+  "data": [
+    {
+      "lat": 45.5,
+      "lon": -73.5,
+      "value": 1200
+    }
+  ]
+}
+```
+
+## Troubleshooting
+
+### "Error: HTTP error! status: 404"
+- **Cause**: Using a non-US location with "Load Real Weather"
+- **Solution**: Use a US city from the preset list or click "Load Demo Data"
+- **Alternative**: Use custom location with demo mode
+
+### Server Won't Start
+```bash
+# Check if port 3000 is in use
+lsof -i :3000
+
+# Kill the process (if needed)
+kill -9 <PID>
+
+# Start server with different port
+PORT=3001 npm start
+```
+
+### Map Not Displaying
+- Check browser console (F12) for JavaScript errors
+- Verify Mapbox token is valid in weather-map.html
+- Ensure JavaScript is enabled in browser
+
+### No Data Appearing on Map
+- Click "Load Demo Data" to test visualization works
+- Confirm location is in USA for real NOAA data
+- Check Network tab (F12) for API errors
 
 ## Development
 
-Run in development mode:
+### View Logs
 ```bash
-npm run dev
+# If running in background
+tail -f /tmp/server.log
+
+# Or check server console output directly
 ```
 
-View server logs:
+### Test API Endpoints
 ```bash
-tail -f /tmp/server.log  # If using background mode
+# Health check
+curl http://localhost:3000/api/health
+
+# Demo data
+curl http://localhost:3000/api/gfs-data-demo
+
+# New York real weather
+curl "http://localhost:3000/api/gfs-data?lat=40.71&lon=-74.01"
+
+# Montreal (shows demo data since outside USA)
+curl "http://localhost:3000/api/gfs-data?lat=45.5&lon=-73.5"
 ```
 
-## Next Steps
+## Advanced: Custom Weather Providers
 
-1. ✅ Verify demo mode works on your machine
-2. Get a gribstream API key from https://gribstream.com
-3. Update `.env` with your API key
-4. Find the correct gribstream API endpoint format
-5. Update endpoint URLs in `server.js` if needed
-6. Customize visualization (colors, parameters, location)
+To add other weather APIs:
+1. Update `server.js` with new endpoint
+2. Transform response to match data format
+3. Add new button/endpoint to HTML
 
 ## License
 

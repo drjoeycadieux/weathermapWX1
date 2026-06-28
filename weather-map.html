@@ -19,9 +19,32 @@
         <strong>GFS Weather Map</strong><br/>
         <small id="status-text">Loading...</small>
     </div>
-    <button id="demo-btn" style="position: absolute; top: 80px; left: 20px; padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 1000; font-size: 12px;">
-        Load Demo Data
-    </button>
+    <div style="position: absolute; top: 80px; left: 20px; z-index: 1000; background: rgba(0,0,0,0.8); padding: 12px; border-radius: 5px; color: white; max-width: 280px;">
+        <div style="font-size: 11px; margin-bottom: 8px;">
+            <label style="display: block; margin-bottom: 6px;">
+                <strong>Choose Location:</strong>
+            </label>
+            <select id="location-select" style="width: 100%; padding: 6px; margin-bottom: 8px; background: #333; color: white; border: 1px solid #666; border-radius: 3px;">
+                <option value="40.71,-74.01">📍 New York (Real NOAA Data)</option>
+                <option value="41.88,-87.63">📍 Chicago (Real NOAA Data)</option>
+                <option value="33.75,-84.39">📍 Atlanta (Real NOAA Data)</option>
+                <option value="47.61,-122.33">📍 Seattle (Real NOAA Data)</option>
+                <option value="45.5,-73.5">📍 Montreal (Demo Data)</option>
+                <option value="35.09,-106.65">📍 Albuquerque (Real NOAA Data)</option>
+                <option value="custom">⚙️ Custom Location...</option>
+            </select>
+            <div id="custom-location" style="display: none; margin-bottom: 8px;">
+                <input type="number" id="lat-input" placeholder="Latitude" step="0.01" style="width: 48%; padding: 4px; margin-right: 4%; background: #333; color: white; border: 1px solid #666; border-radius: 3px;">
+                <input type="number" id="lon-input" placeholder="Longitude" step="0.01" style="width: 48%; padding: 4px; background: #333; color: white; border: 1px solid #666; border-radius: 3px;">
+            </div>
+        </div>
+        <button id="load-real-btn" style="width: 100%; padding: 6px; background: #28a745; color: white; border: none; border-radius: 3px; cursor: pointer; margin-bottom: 6px; font-size: 11px;">
+            📡 Load Real Weather
+        </button>
+        <button id="demo-btn" style="width: 100%; padding: 6px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px;">
+            📊 Load Demo Data
+        </button>
+    </div>
     <script>
         const { MapboxOverlay, GridLayer } = deck;
         
@@ -46,14 +69,41 @@
         });
 
         let currentOverlay = null;
+        let currentLocation = { lat: 45.5, lon: -73.5 };
 
-        // Fetch data from backend API (no CORS issues)
-        async function loadWeatherData(useDemo = false) {
+        // Location selector handler
+        document.getElementById('location-select').addEventListener('change', (e) => {
+            const customDiv = document.getElementById('custom-location');
+            if (e.target.value === 'custom') {
+                customDiv.style.display = 'block';
+                // Default to current location
+                document.getElementById('lat-input').value = currentLocation.lat;
+                document.getElementById('lon-input').value = currentLocation.lon;
+            } else {
+                customDiv.style.display = 'none';
+                const [lat, lon] = e.target.value.split(',');
+                currentLocation = { lat: parseFloat(lat), lon: parseFloat(lon) };
+                updateMapCenter(parseFloat(lat), parseFloat(lon));
+            }
+        });
+
+        // Update map center and load data
+        function updateMapCenter(lat, lon) {
+            map.flyTo({
+                center: [lon, lat],
+                zoom: 6,
+                duration: 2000
+            });
+        }
+
+        // Load weather data from backend API
+        async function loadWeatherData(lat, lon, useDemo = false) {
             try {
                 updateStatus('Fetching weather data...');
                 
-                // Use demo endpoint if requested
-                const apiUrl = useDemo ? '/api/gfs-data-demo' : '/api/gfs-data?param=cape&range=24';
+                const apiUrl = useDemo 
+                    ? '/api/gfs-data-demo' 
+                    : `/api/gfs-data?lat=${lat}&lon=${lon}`;
                 
                 console.log('Fetching from:', apiUrl);
                 const response = await fetch(apiUrl);
@@ -71,7 +121,7 @@
                 
                 const data = await response.json();
                 console.log('Weather data received:', data);
-                updateStatus('Data loaded successfully');
+                updateStatus(`Data loaded: ${data.model || 'Unknown'}`);
 
                 // Handle different data formats
                 let dataArray = data;
@@ -91,21 +141,20 @@
                     currentOverlay = new MapboxOverlay({
                         layers: [
                             new GridLayer({
-                                id: 'gfs-cape-layer',
+                                id: 'gfs-weather-layer',
                                 data: dataArray,
                                 getPosition: d => [d.lon || d.longitude || 0, d.lat || d.latitude || 0],
-                                getColorValue: d => d.value || 0,
-                                getElevationValue: d => d.value || 0,
+                                getColorValue: d => d.value || d.temperature || 0,
+                                getElevationValue: d => d.value || d.temperature || 0,
                                 cellSize: 20000, 
                                 extruded: true, 
                                 colorRange: [
-                                    [255, 255, 204],
-                                    [255, 237, 160],
-                                    [254, 217, 118],
-                                    [254, 178, 76],
-                                    [253, 141, 60],
-                                    [252, 78, 42],
-                                    [227, 26, 28]
+                                    [30, 60, 200],    // Deep blue (cold)
+                                    [100, 150, 255],  // Light blue
+                                    [100, 255, 100],  // Green (mild)
+                                    [255, 255, 100],  // Yellow (warm)
+                                    [255, 150, 0],    // Orange (hot)
+                                    [255, 50, 0]      // Red (very hot)
                                 ]
                             })
                         ]
@@ -121,14 +170,32 @@
             }
         }
 
-        // Demo button handler
+        // Button handlers
+        document.getElementById('load-real-btn').addEventListener('click', () => {
+            const select = document.getElementById('location-select');
+            if (select.value === 'custom') {
+                const lat = parseFloat(document.getElementById('lat-input').value);
+                const lon = parseFloat(document.getElementById('lon-input').value);
+                if (!isNaN(lat) && !isNaN(lon)) {
+                    currentLocation = { lat, lon };
+                    updateMapCenter(lat, lon);
+                    loadWeatherData(lat, lon, false);
+                } else {
+                    updateStatus('Please enter valid latitude and longitude', true);
+                }
+            } else {
+                const [lat, lon] = select.value.split(',');
+                loadWeatherData(parseFloat(lat), parseFloat(lon), false);
+            }
+        });
+
         document.getElementById('demo-btn').addEventListener('click', () => {
-            loadWeatherData(true);
+            loadWeatherData(currentLocation.lat, currentLocation.lon, true);
         });
 
         map.on('load', () => {
-            // Try to load real data on startup
-            loadWeatherData(false);
+            // Load demo data on startup
+            loadWeatherData(currentLocation.lat, currentLocation.lon, true);
         });
     </script>
 </body>

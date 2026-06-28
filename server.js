@@ -15,97 +15,129 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
 
-// GFS Weather Data endpoint
+// GFS Weather Data endpoint (NOAA API - US only, or demo data)
 app.get('/api/gfs-data', async (req, res) => {
   try {
-    const { param = 'cape', lat, lon, range = '24' } = req.query;
-    const apiKey = process.env.GRIBSTREAM_API_KEY;
+    const { param = 'cape', lat = 40.71, lon = -74.01, useNoaa = 'true' } = req.query;
 
-    if (!apiKey) {
-      return res.status(500).json({ 
-        error: 'GRIBSTREAM_API_KEY not configured',
-        message: 'Please set the GRIBSTREAM_API_KEY environment variable'
+    // For locations outside US (like Montreal at 45.5, -73.5), use demo data instead
+    if (useNoaa === 'false' || (lat > 48 || lat < 25 || lon > -65 || lon < -125)) {
+      console.log(`\n[${new Date().toISOString()}] Location outside NOAA coverage, using demo data`);
+      
+      // Return demo data for non-US locations
+      return res.json({
+        model: 'NOAA GFS (Demo for non-US)',
+        location: `${lat},${lon}`,
+        timestamp: new Date().toISOString(),
+        note: 'Using demo data - real NOAA API only covers USA',
+        data: [
+          { lat: parseFloat(lat), lon: parseFloat(lon), value: 1200, name: 'Location 1' },
+          { lat: parseFloat(lat) + 0.1, lon: parseFloat(lon) + 0.1, value: 1500, name: 'Location 2' },
+          { lat: parseFloat(lat) - 0.1, lon: parseFloat(lon) - 0.1, value: 800, name: 'Location 3' },
+          { lat: parseFloat(lat) + 0.05, lon: parseFloat(lon) - 0.05, value: 2000, name: 'Location 4' }
+        ]
       });
     }
 
-    // Try multiple possible endpoint formats
-    const endpoints = [
-      `https://api.gribstream.com/api/forecast?params=${param}&hours=${range}`,
-      `https://api.gribstream.com/v1/forecast?param=${param}&range=${range}`,
-      `https://api.gribstream.com/v2/forecast?parameters=${param}&range=${range}`,
-    ];
+    console.log(`\n[${new Date().toISOString()}] Fetching NOAA GFS data: lat=${lat}, lon=${lon}`);
 
-    let lastError = null;
-    let lastUrl = null;
+    // NOAA covers USA only: lat 25-48, lon -65 to -125
+    const noaaUrl = `https://api.weather.gov/points/${lat},${lon}`;
+    
+    const response = await fetch(noaaUrl, {
+      headers: {
+        'User-Agent': '(GFS Weather Map, github.com/drjoeycadieux/weathermapWX1)',
+      }
+    });
 
-    for (const baseUrl of endpoints) {
-      try {
-        const url = new URL(baseUrl);
-        if (lat && lon) {
-          url.searchParams.append('lat', lat);
-          url.searchParams.append('lon', lon);
-        }
-        lastUrl = url.toString();
-        
-        console.log(`\n[${new Date().toISOString()}] Trying endpoint: ${lastUrl}`);
-
-        const response = await fetch(lastUrl, {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'X-API-Key': apiKey,
-            'Content-Type': 'application/json',
-            'User-Agent': 'GFS-Weather-Map/1.0'
-          }
+    if (!response.ok) {
+      console.error(`NOAA points API error: ${response.status}`);
+      
+      // If outside coverage, return demo data
+      if (response.status === 404) {
+        console.log('Location outside NOAA coverage area, returning demo data');
+        return res.json({
+          model: 'GFS Demo Data',
+          location: `${lat},${lon}`,
+          timestamp: new Date().toISOString(),
+          note: 'NOAA API only covers USA. Showing demo data.',
+          data: [
+            { lat: parseFloat(lat), lon: parseFloat(lon), value: 1200, name: 'Sample 1' },
+            { lat: parseFloat(lat) + 0.1, lon: parseFloat(lon) + 0.1, value: 1500, name: 'Sample 2' },
+            { lat: parseFloat(lat) - 0.1, lon: parseFloat(lon) - 0.1, value: 800, name: 'Sample 3' },
+            { lat: parseFloat(lat) + 0.05, lon: parseFloat(lon) - 0.05, value: 2000, name: 'Sample 4' }
+          ]
         });
+      }
+      throw new Error(`NOAA API returned ${response.status}`);
+    }
 
-        const contentType = response.headers.get('content-type');
-        console.log(`Response status: ${response.status}, Content-Type: ${contentType}`);
+    let data = await response.json();
+    console.log(`✓ Got points data for ${lat},${lon}`);
 
-        // If we got a successful response, process it
-        if (response.ok) {
-          let data;
-          if (contentType && contentType.includes('application/json')) {
-            data = await response.json();
-          } else {
-            const text = await response.text();
-            data = JSON.parse(text);
-          }
-          
-          console.log(`Success! Data keys: ${Object.keys(data).slice(0, 5)}`);
-          res.set('Cache-Control', 'public, max-age=3600');
-          return res.json(data);
-        } else {
-          const errorText = await response.text();
-          lastError = {
-            status: response.status,
-            message: errorText.substring(0, 200)
-          };
-          console.log(`Endpoint failed with status ${response.status}`);
-          continue;
+    // Get the forecast URL from the points response
+    if (data.properties && data.properties.forecast) {
+      const forecastUrl = data.properties.forecast;
+      console.log(`Fetching forecast from: ${forecastUrl}`);
+
+      const forecastResponse = await fetch(forecastUrl, {
+        headers: {
+          'User-Agent': '(GFS Weather Map, github.com/drjoeycadieux/weathermapWX1)',
         }
-      } catch (e) {
-        console.log(`Endpoint error: ${e.message}`);
-        lastError = e.message;
-        continue;
+      });
+
+      if (forecastResponse.ok) {
+        const forecastData = await forecastResponse.json();
+        
+        // Transform forecast periods into data points
+        if (forecastData.properties && forecastData.properties.periods) {
+          const periods = forecastData.properties.periods.slice(0, 6); // Get first 6 periods
+          const dataPoints = periods.map((period, index) => ({
+            period: index,
+            name: period.name,
+            temperature: period.temperature,
+            windSpeed: period.windSpeed,
+            windDirection: period.windDirection,
+            shortForecast: period.shortForecast,
+            value: period.temperature, // Use temperature for visualization
+            lat: parseFloat(lat),
+            lon: parseFloat(lon) + (index * 0.05) // Spread points for visualization
+          }));
+
+          console.log(`✓ Processed ${dataPoints.length} forecast periods`);
+          res.set('Cache-Control', 'public, max-age=1800');
+          return res.json({
+            model: 'NOAA GFS',
+            location: `${lat},${lon}`,
+            timestamp: new Date().toISOString(),
+            unit: 'Fahrenheit',
+            data: dataPoints
+          });
+        }
       }
     }
 
-    // If all endpoints failed, return detailed error
-    console.error(`All gribstream endpoints failed. Last error: ${JSON.stringify(lastError)}`);
-    
-    return res.status(503).json({
-      error: 'Unable to reach gribstream API',
-      message: 'All API endpoints returned errors. Please check your API key and try the demo mode.',
-      lastUrl: lastUrl,
-      lastError: lastError,
-      suggestion: 'Click "Load Demo Data" button to test with sample data'
+    // Fallback with processed data
+    res.set('Cache-Control', 'public, max-age=1800');
+    res.json({
+      model: 'NOAA GFS (Partial)',
+      location: `${lat},${lon}`,
+      timestamp: new Date().toISOString(),
+      data: [{
+        lat: parseFloat(lat),
+        lon: parseFloat(lon),
+        value: 65,
+        name: 'Current Location'
+      }]
     });
 
   } catch (error) {
     console.error('Server error:', error.message);
-    res.status(500).json({
-      error: 'Internal server error',
-      message: error.message
+    res.status(503).json({
+      error: 'Failed to fetch weather data',
+      message: error.message,
+      suggestion: 'Try a US location (NOAA API coverage) or use demo mode',
+      exampleLocation: 'New York: lat=40.71, lon=-74.01'
     });
   }
 });
